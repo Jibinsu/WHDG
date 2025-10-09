@@ -171,11 +171,12 @@
     }
 
     function changeWounds(index, amount) {
-        const tracker = woundTrackers[index];
+        const idx = parseInt(index, 10);
+        const tracker = woundTrackers[idx];
         if (!tracker) return;
         tracker.current = Math.max(0, Math.min(tracker.max, tracker.current + amount));
-        document.getElementById(`wound-display-${index}`).textContent = tracker.current;
-        const trackerRow = document.getElementById(`wound-tracker-${index}`);
+        document.getElementById(`wound-display-${idx}`).textContent = tracker.current;
+        const trackerRow = document.getElementById(`wound-tracker-${idx}`);
         trackerRow.classList.remove('deadly-demise-highlight');
         if (tracker.current === 0) {
             const unit = codexData.find(u => u.id === selectedUnitId);
@@ -221,7 +222,6 @@
         const unit = codexData.find(u => u.id === unitId);
         if (!unit) return;
 
-        // This is the key for wound persistence. The woundTrackers array is ONLY reset if it's NOT a phase update.
         if (!isPhaseUpdate) {
             updateUnitCount(1);
         }
