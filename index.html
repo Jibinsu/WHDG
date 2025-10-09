@@ -17,11 +17,6 @@
             --deadly-demise-color: #dc322f;
         }
 
-        @keyframes deadlyDemiseFlash {
-            0%, 100% { background-color: var(--surface-color); }
-            50% { background-color: #ffdddd; }
-        }
-
         html, body {
             height: 100%; margin: 0; overflow: hidden; background-color: var(--bg-color);
             color: var(--text-color); font-family: Verdana, Geneva, sans-serif; font-size: 16px;
@@ -82,9 +77,8 @@
         
         .wound-tracker-instance {
             display: flex; align-items: center; justify-content: space-between; padding: 8px; margin-bottom: 5px;
-            border-radius: 5px; transition: background-color 0.5s;
+            border-radius: 5px;
         }
-        .wound-tracker-instance.deadly-demise-highlight { animation: deadlyDemiseFlash 1s infinite; }
         .wound-tracker-label { font-weight: bold; font-size: 0.9em; }
         .wound-display { font-size: 1.5em; font-weight: bold; margin: 0 10px; color: var(--header-color); }
         .wound-btn {
@@ -95,7 +89,15 @@
         .wound-btn:hover { background-color: var(--border-color); }
 
         .core-ability-list { display: flex; flex-wrap: wrap; gap: 8px; }
-        .core-ability-pill { background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 12px; font-size: 0.85em; }
+        .core-ability-pill { background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 12px; font-size: 0.85em; transition: all 0.3s; }
+        
+        /* --- NEW: Simple highlight for Deadly Demise --- */
+        .deadly-demise-triggered {
+            color: var(--deadly-demise-color) !important;
+            font-weight: bold;
+            border-color: var(--deadly-demise-color);
+        }
+
         .item { margin-bottom: 15px; } .item strong { font-size: 1.1em; color: var(--header-color); display: block; margin-bottom: 4px; } .item p { margin: 0; line-height: 1.6; font-size: 0.95em;} .item ul { padding-left: 20px; margin: 5px 0; } .sub-item { margin-top: 10px; border-left: 2px solid var(--border-color); padding-left: 10px; }
         .weapon-profile { background-color: var(--bg-color); padding: 10px; border-radius: 4px; margin-top: 5px; margin-bottom: 8px; font-size: 0.9em; border: 1px solid var(--border-color); }
         .weapon-profile-name { font-style: italic; font-size: 1.1em; margin-bottom: 5px; font-weight: bold; color: var(--text-color); }
@@ -138,6 +140,7 @@
         { id: 'plagueburst_crawler', name: 'Plagueburst Crawler', stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' }, wargear: [ { name: 'Entropy cannon', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: 1</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: D6+1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Heavy slugger', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: 4</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Plagueburst mortar', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 48"</span>, <span class="kw-attacks">A: D6+3</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-spec">INDIRECT FIRE</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Armoured tracks', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 4+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>' } ]} ], abilities: { core: [{ name: 'Deadly Demise D3', desc: 'When this model is destroyed, roll one D6 before removing it from play. On a 5+, it explodes, and each unit within 3" suffers D3 mortal wounds.', phases: ['any'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Spore-laced Shock Waves', desc: 'In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted: on a 6+, the unit being rolled for is struck by spores. After resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.', phases: ['my_shooting'] } ], damaged: 'While this model has 1-4 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll.' }, keywords: { main: ['VEHICLE', 'CHAOS', 'NURGLE', 'DAEMON', 'PLAGUEBURST CRAWLER'], faction: ['DEATH GUARD'] } }
     ];
 
+    // --- JAVASCRIPT LOGIC ---
     const gamePhases = [
         { id: 'my_movement', label: "My Turn - Movement" }, { id: 'my_shooting', label: "My Turn - Shooting" },
         { id: 'my_charge', label: "My Turn - Charge" }, { id: 'fight', label: "My Turn - Fight" },
@@ -146,7 +149,7 @@
     ];
     let currentPhaseIndex = -1, selectedUnitId = null, woundTrackers = [];
 
-    const unitListEl = document.getElementById('unit-list'), unitDetailsWrapperEl = document.getElementById('unit-details-wrapper'),
+    const unitListEl = document.getElementById('unit-list'),
         unitDetailsHeaderEl = document.getElementById('unit-details-header'), unitDetailsEl = document.getElementById('unit-details'),
         phaseNameEl = document.getElementById('current-phase-name'), nextPhaseBtn = document.getElementById('next-phase-btn'),
         unitNameDisplayEl = document.getElementById('unit-name-display'), unitCountWrapperEl = document.getElementById('unit-count-wrapper'),
@@ -170,28 +173,54 @@
         return '';
     }
 
+    /**
+     * BUG FIX: Reverted to direct DOM manipulation for immediate and reliable feedback.
+     * This function now updates the data model AND the UI directly.
+     */
     function changeWounds(index, amount) {
         const idx = parseInt(index, 10);
         const tracker = woundTrackers[idx];
         if (!tracker) return;
+
+        // 1. Update the data model
         tracker.current = Math.max(0, Math.min(tracker.max, tracker.current + amount));
-        document.getElementById(`wound-display-${idx}`).textContent = tracker.current;
-        const trackerRow = document.getElementById(`wound-tracker-${idx}`);
-        trackerRow.classList.remove('deadly-demise-highlight');
-        if (tracker.current === 0) {
-            const unit = codexData.find(u => u.id === selectedUnitId);
-            if (unit.abilities.core.some(a => a.name.includes('Deadly Demise'))) {
-                trackerRow.classList.add('deadly-demise-highlight');
-            }
+
+        // 2. Directly manipulate the DOM for immediate feedback
+        const woundDisplay = document.getElementById(`wound-display-${idx}`);
+        if (woundDisplay) {
+            woundDisplay.textContent = tracker.current;
         }
+        
+        // 3. Update the Deadly Demise highlight on the core ability text
+        updateDeadlyDemiseHighlight();
     }
 
+    /**
+     * NEW: Central function to control the Deadly Demise highlight.
+     * Checks if ANY model is at 0 wounds and applies/removes the highlight.
+     */
+    function updateDeadlyDemiseHighlight() {
+        const ddPill = document.getElementById('deadly-demise-pill');
+        if (!ddPill) return;
+
+        const hasDestroyedModels = woundTrackers.some(t => t.current === 0);
+        const unit = codexData.find(u => u.id === selectedUnitId);
+        const hasDeadlyDemise = unit && unit.abilities.core.some(a => a.name.includes('Deadly Demise'));
+
+        if (hasDestroyedModels && hasDeadlyDemise) {
+            ddPill.classList.add('deadly-demise-triggered');
+        } else {
+            ddPill.classList.remove('deadly-demise-triggered');
+        }
+    }
+    
     function renderWoundTrackers() {
         const container = document.getElementById('multi-wound-tracker-container');
         if (!container) return;
-        container.innerHTML = '';
+        
+        let html = '';
         woundTrackers.forEach((tracker, index) => {
-            container.innerHTML += `
+            html += `
                 <div class="wound-tracker-instance" id="wound-tracker-${index}">
                     <span class="wound-tracker-label">Model ${index + 1}</span>
                     <div>
@@ -201,6 +230,7 @@
                     </div>
                 </div>`;
         });
+        container.innerHTML = html;
         document.querySelectorAll('.wound-minus-btn').forEach(btn => btn.addEventListener('click', (e) => changeWounds(e.target.dataset.index, -1)));
         document.querySelectorAll('.wound-plus-btn').forEach(btn => btn.addEventListener('click', (e) => changeWounds(e.target.dataset.index, 1)));
     }
@@ -211,6 +241,7 @@
         const maxWounds = parseInt(unit.stats.W);
         woundTrackers = Array.from({ length: count }, () => ({ current: maxWounds, max: maxWounds }));
         renderWoundTrackers();
+        updateDeadlyDemiseHighlight(); // Check highlight state on count change
     }
     
     function displayUnitDetails(unitId, isPhaseUpdate = false) {
@@ -250,7 +281,13 @@
         }
         col2HTML += `<h3 class="section-title">Abilities</h3>`;
         if (unit.abilities.core) {
-            const corePills = unit.abilities.core.map(a => `<span class="core-ability-pill ${getHighlightClass(a)}">${a.name}</span>`).join('');
+            const hasDestroyedModels = woundTrackers.some(t => t.current === 0);
+            const corePills = unit.abilities.core.map(a => {
+                const isDD = a.name.includes('Deadly Demise');
+                const ddId = isDD ? 'id="deadly-demise-pill"' : '';
+                const ddTriggeredClass = (isDD && hasDestroyedModels) ? 'deadly-demise-triggered' : '';
+                return `<span ${ddId} class="core-ability-pill ${getHighlightClass(a)} ${ddTriggeredClass}">${a.name}</span>`;
+            }).join('');
             col2HTML += `<div class="item"><strong class="ability-name">Core</strong><div class="core-ability-list">${corePills}</div></div>`;
         }
         if (unit.abilities.faction) {
@@ -291,10 +328,11 @@
         });
     }
 
-    // Populate the model count selector up to 20
+    let selectorHTML = '';
     for (let i = 1; i <= 20; i++) {
-        unitCountSelectorEl.innerHTML += `<option value="${i}">${i}</option>`;
+        selectorHTML += `<option value="${i}">${i}</option>`;
     }
+    unitCountSelectorEl.innerHTML = selectorHTML;
 
     nextPhaseBtn.addEventListener('click', updatePhase);
     unitCountSelectorEl.addEventListener('change', (e) => updateUnitCount(parseInt(e.target.value)));
