@@ -3,154 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Death Guard Codex Viewer</title>
+    <title>Death Guard Codex Assistant</title>
     <style>
-        /* CSS REBUILD - DYSLEXIA-FRIENDLY & SEGMENTED */
-
         :root {
-            /* New "Dataslate" Color Palette */
-            --bg-color: #fdf6e3;         /* Parchment/Off-white background */
-            --surface-color: #f5efdb;    /* Slightly darker card background */
-            --text-color: #4c463a;       /* Dark, warm grey for body text */
-            --header-color: #073642;     /* Very dark blue for main headers */
-            --accent-color: #268bd2;     /* Muted blue for accents */
-            --border-color: #dcd7c8;
-
-            /* Weapon/Keyword colors remain for clarity */
-            --stat-range-color: #cb4b16;
-            --stat-attacks-color: #b58900;
-            --stat-skill-color: #2aa198;
-            --stat-strength-color: #dc322f;
-            --stat-ap-color: #6c71c4;
-            --stat-damage-color: #d33682;
-            --keyword-positive-color: #859900;
-            --keyword-negative-color: #dc322f;
-            --keyword-core-color: #6c71c4;
-            --keyword-special-color: #073642;
+            --bg-color: #fdf6e3; --surface-color: #f5efdb; --text-color: #4c463a;
+            --header-color: #073642; --accent-color: #268bd2; --border-color: #dcd7c8;
+            --highlight-color: #268bd2; --highlight-text: #fff;
+            --stat-range-color: #cb4b16; --stat-attacks-color: #b58900; --stat-skill-color: #2aa198;
+            --stat-strength-color: #dc322f; --stat-ap-color: #6c71c4; --stat-damage-color: #d33682;
+            --keyword-positive-color: #859900; --keyword-negative-color: #dc322f;
+            --keyword-core-color: #6c71c4; --keyword-special-color: #073642;
+            --phase-highlight-color: #b58900; --aura-highlight-color: #268bd2;
+            --deadly-demise-color: #dc322f;
         }
 
-        /* --- Global Dyslexia-Friendly Settings --- */
+        @keyframes deadlyDemiseFlash {
+            0%, 100% { background-color: var(--surface-color); }
+            50% { background-color: #ffdddd; }
+        }
+
         html, body {
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            /* Font chosen for its high legibility */
-            font-family: Verdana, Geneva, sans-serif;
-            font-size: 16px;
-            /* Increased spacing for readability */
-            line-height: 1.6;
-            letter-spacing: 0.5px;
-            word-spacing: 1.5px;
+            height: 100%; margin: 0; overflow: hidden; background-color: var(--bg-color);
+            color: var(--text-color); font-family: Verdana, Geneva, sans-serif; font-size: 16px;
+            line-height: 1.6; letter-spacing: 0.5px; word-spacing: 1.5px;
         }
 
-        /* --- Main Layout --- */
-        .container {
-            display: flex;
-            height: 100vh;
+        #phase-tracker {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 25px; background-color: var(--header-color); color: var(--bg-color);
+            flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        #current-phase-name { margin: 0; font-size: 1.5em; }
+        #next-phase-btn {
+            background-color: var(--accent-color); color: #fff; border: none;
+            padding: 10px 20px; border-radius: 5px; font-weight: bold;
+            font-size: 1em; cursor: pointer; transition: background-color 0.2s;
+        }
+        #next-phase-btn:hover { background-color: #55a8e2; }
 
-        /* --- Sidebar --- */
+        .app-body { display: flex; height: calc(100vh - 70px); }
         #unit-list {
-            width: 300px;
-            flex-shrink: 0;
-            background-color: var(--surface-color);
-            padding: 15px;
-            border-right: 2px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
+            width: 300px; flex-shrink: 0; background-color: var(--surface-color); padding: 15px;
+            border-right: 2px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto;
         }
-
-        #unit-list h2 {
-            margin-top: 0;
-            color: var(--header-color);
-            text-align: center;
-            font-size: 1.8em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
+        #unit-list h2 { margin-top: 0; color: var(--header-color); text-align: center; font-size: 1.8em; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
         .unit-selector {
-            display: block;
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            text-align: left;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 1em;
-            transition: all 0.2s ease-in-out;
+            display: block; width: 100%; padding: 12px 15px; margin-bottom: 8px; background-color: var(--bg-color);
+            border: 1px solid var(--border-color); color: var(--text-color); text-align: left; cursor: pointer;
+            border-radius: 4px; font-size: 1em; transition: all 0.2s ease-in-out;
         }
+        .unit-selector:hover { border-color: var(--accent-color); box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        .unit-selector.active { background-color: var(--highlight-color); border-color: var(--header-color); color: var(--highlight-text); font-weight: bold; }
 
-        .unit-selector:hover {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-
-        .unit-selector.active {
-            background-color: var(--accent-color);
-            border-color: var(--header-color);
-            color: #fff; /* High contrast for active selection */
-            font-weight: bold;
-        }
-
-        /* --- Main Details Area --- */
-        #unit-details-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 0 25px;
-            overflow: hidden;
-        }
-
-        #unit-details-header {
-            flex-shrink: 0;
-            text-align: center;
-            font-size: 2.5em;
-            font-weight: bold;
-            color: var(--header-color);
-            padding: 15px 0;
-        }
-
-        #unit-details {
-            flex-grow: 1;
-            display: flex;
-            gap: 25px;
-            padding-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .details-column {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        /* --- Info Card Segmentation --- */
-        .info-card {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+        #unit-details-wrapper { flex-grow: 1; display: flex; flex-direction: column; padding: 0 25px; overflow: hidden; }
         
-        .section-title {
-            font-size: 1.3em;
-            color: var(--accent-color);
-            font-weight: bold;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-            margin-top: 0;
-            margin-bottom: 15px;
+        #unit-details-header {
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            flex-shrink: 0; text-align: center; font-size: 2.5em; font-weight: bold;
+            color: var(--header-color); padding: 15px 0;
         }
+        #unit-count-selector { font-size: 0.6em; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); }
 
+        #unit-details { flex-grow: 1; display: flex; gap: 25px; padding-bottom: 15px; overflow: hidden; }
+        .details-column { flex: 1; overflow-y: auto; padding-right: 10px; }
+        .info-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+        
+        .phase-highlight { border-color: var(--phase-highlight-color); box-shadow: 0 0 12px var(--phase-highlight-color); }
+        .aura-highlight { border-left-color: var(--aura-highlight-color); border-left-width: 5px; }
+        
+        .section-title { font-size: 1.3em; color: var(--accent-color); font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0; margin-bottom: 15px; }
         .stats-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 1em; }
         .invuln-save { text-align: center; border-left: 1px solid var(--border-color); padding-left: 15px; margin-left: 15px; }
         .invuln-save strong { font-size: 1.5em; color: var(--keyword-core-color); }
@@ -158,161 +79,227 @@
         .stats-table th, .stats-table td { padding: 8px; }
         .stats-table th { color: var(--accent-color); font-weight: bold; }
         .stats-table td { font-weight: bold; font-size: 1.1em; }
-
-        .item { margin-bottom: 15px; }
-        .item strong { font-size: 1.1em; color: var(--header-color); display: block; margin-bottom: 4px; }
-        .item p { margin: 0; line-height: 1.6; font-size: 0.95em;}
-        .item ul { padding-left: 20px; margin: 5px 0; }
-        .sub-item { margin-top: 10px; border-left: 2px solid var(--border-color); padding-left: 10px; }
         
-        .weapon-profile {
-            background-color: var(--bg-color); padding: 10px; border-radius: 4px;
-            margin-top: 5px; margin-bottom: 8px; font-size: 0.9em;
-            border: 1px solid var(--border-color);
+        .wound-tracker-instance {
+            display: flex; align-items: center; justify-content: space-between; padding: 8px; margin-bottom: 5px;
+            border-radius: 5px; transition: background-color 0.5s;
         }
+        .wound-tracker-instance.deadly-demise-highlight { animation: deadlyDemiseFlash 1s infinite; }
+        .wound-tracker-label { font-weight: bold; font-size: 0.9em; }
+        .wound-display { font-size: 1.5em; font-weight: bold; margin: 0 10px; color: var(--header-color); }
+        .wound-btn {
+            font-size: 1.5em; width: 35px; height: 35px; line-height: 35px; text-align: center;
+            border-radius: 50%; border: 1px solid var(--border-color); background-color: var(--bg-color);
+            cursor: pointer; color: var(--text-color);
+        }
+        .wound-btn:hover { background-color: var(--border-color); }
+
+        .core-ability-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .core-ability-pill { background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 12px; font-size: 0.85em; }
+        .item { margin-bottom: 15px; } .item strong { font-size: 1.1em; color: var(--header-color); display: block; margin-bottom: 4px; } .item p { margin: 0; line-height: 1.6; font-size: 0.95em;} .item ul { padding-left: 20px; margin: 5px 0; } .sub-item { margin-top: 10px; border-left: 2px solid var(--border-color); padding-left: 10px; }
+        .weapon-profile { background-color: var(--bg-color); padding: 10px; border-radius: 4px; margin-top: 5px; margin-bottom: 8px; font-size: 0.9em; border: 1px solid var(--border-color); }
         .weapon-profile-name { font-style: italic; font-size: 1.1em; margin-bottom: 5px; font-weight: bold; color: var(--text-color); }
-
-        .keywords { text-align: center; font-size: 0.85em; }
-        .keywords-faction { font-weight: bold; color: var(--accent-color); }
-
+        .keywords { text-align: center; font-size: 0.85em; } .keywords-faction { font-weight: bold; color: var(--accent-color); }
         .kw-range, .kw-attacks, .kw-skill, .kw-strength, .kw-ap, .kw-damage, .kw-pos, .kw-neg, .kw-core, .kw-spec { font-weight: bold; }
-        .kw-range { color: var(--stat-range-color); }
-        .kw-attacks { color: var(--stat-attacks-color); }
-        .kw-skill { color: var(--stat-skill-color); }
-        .kw-strength { color: var(--stat-strength-color); }
-        .kw-ap { color: var(--stat-ap-color); }
-        .kw-damage { color: var(--stat-damage-color); }
-        .kw-pos { color: var(--keyword-positive-color); }
-        .kw-neg { color: var(--keyword-negative-color); }
-        .kw-core { color: var(--keyword-core-color); }
-        .kw-spec { color: var(--keyword-special-color); }
+        .kw-range { color: var(--stat-range-color); } .kw-attacks { color: var(--stat-attacks-color); } .kw-skill { color: var(--stat-skill-color); } .kw-strength { color: var(--stat-strength-color); } .kw-ap { color: var(--stat-ap-color); } .kw-damage { color: var(--stat-damage-color); } .kw-pos { color: var(--keyword-positive-color); } .kw-neg { color: var(--keyword-negative-color); } .kw-core { color: var(--keyword-core-color); } .kw-spec { color: var(--keyword-special-color); }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="phase-tracker">
+    <h2 id="current-phase-name">Start of Game</h2>
+    <button id="next-phase-btn">Start Turn 1</button>
+</div>
+
+<div class="app-body">
     <aside id="unit-list">
         <h2>Datasheets</h2>
     </aside>
     <div id="unit-details-wrapper">
-        <div id="unit-details-header">Select a Unit</div>
-        <div id="unit-details">
+        <div id="unit-details-header">
+            <span id="unit-name-display">Select a Unit</span>
+            <div id="unit-count-wrapper" style="display: none;">
+                <label for="unit-count-selector" style="font-size: 0.5em; font-weight: normal;">Model Count:</label>
+                <select id="unit-count-selector" size="5"></select>
             </div>
+        </div>
+        <div id="unit-details"></div>
     </div>
 </div>
 
-
 <script>
-    // --- DATA (Unchanged) ---
     const codexData = [
-        { id: 'mortarion', name: 'Mortarion', stats: { M: '10"', T: '12', Sv: '2+', W: '16', Ld: '5+', OC: '6', invuln: '4+' }, wargear: [ { name: 'Lantern', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 24"</span>, <span class="kw-attacks">A: 1</span>, <span class="kw-skill">BS: 2+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: 3</span>, [<span class="kw-spec">PISTOL</span>, <span class="kw-pos">SUSTAINED HITS D3</span>]' } ]}, { name: 'Rotwind', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 24"</span>, <span class="kw-attacks">A: D6+3</span>, <span class="kw-skill">BS: 2+</span>, <span class="kw-strength">S: 7</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-neg">DEVASTATING WOUNDS</span>, <span class="kw-pos">LETHAL HITS</span>, <span class="kw-spec">PSYCHIC</span>]' } ]}, { name: 'Silence', type: 'Melee', profiles: [ { name: 'Strike', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 5</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 14</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: D6+1</span>, [<span class="kw-neg">DEVASTATING WOUNDS</span>, <span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 15</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>, <span class="kw-pos">SUSTAINED HITS 1</span>]' } ]} ], abilities: { core: ['<span class="kw-core">Deadly Demise D6</span>', '<span class="kw-core">Deep Strike</span>', '<span class="kw-core">Feel No Pain 5+</span>'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Host of Plagues', desc: 'At the end of your Movement phase, roll one D6 for each enemy unit within 6" of this model, adding 1 to the result if that enemy unit is Afflicted: on a 3+, that enemy unit suffers D3 mortal wounds.'}, { name: 'Lord of the Death Guard', desc: 'Once per turn, this model can use one of the Lord of the Death Guard abilities below.', sub_abilities: [ { name: 'Diseased Influence', desc: 'Just after an enemy unit ends a Normal, Advance or Fall Back move within 9" of a friendly DEATH GUARD unit that is within 6" of this model, if that DEATH GUARD unit is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 5".' }, { name: 'Boon of Contagion', desc: 'In the Fight phase, when a friendly DEATH GUARD unit within 6" of this model is selected as the target of an attack, this model can use this ability. If it does, until the end of the phase, each time a model in that DEATH GUARD unit is destroyed by a melee attack, if that model has not fought this phase, roll one D6. On a 2+, do not remove it from play; that destroyed model can fight after the attacking unit has finished making its attacks, and it is then removed from play.' }, { name: 'Inflamed Reprisal', desc: 'In your opponent’s Shooting phase, when a friendly DEATH GUARD unit within 6" of this model is selected as the target of an attack, this model can use this ability. If it does, after the attacking unit has finished making its attacks, that DEATH GUARD unit can shoot as if it were your Shooting phase, but when resolving those attacks it can only target that enemy unit (and only if it is an eligible target).' } ]}, { name: 'Supreme Commander', desc: 'If this model is in your army, it must be your WARLORD.'} ], damaged: 'While this model has 1-6 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll.' }, keywords: { main: ['MONSTER', 'CHARACTER', 'PSYKER', 'FLY', 'EPIC HERO', 'GRENADES', 'CHAOS', 'NURGLE', 'DAEMON', 'PRIMARCH', 'MORTARION'], faction: ['DEATH GUARD'] } },
-        { id: 'lord_of_virulence', name: 'Lord of Virulence', stats: { M: '5"', T: '7', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Twin plague spewer', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 12"</span>, <span class="kw-attacks">A: D6</span>, <span class="kw-skill">BS: N/A</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-neg">ANTI-INFANTRY 2+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">TORRENT</span>, <span class="kw-spec">TWIN-LINKED</span>]' } ]}, { name: 'Power fist', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 5</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: ['<span class="kw-core">Deep Strike</span>', 'Leader'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Virulent Aura', desc: 'While this model is leading a unit, each time a model in that unit makes a ranged attack, you can re-roll the Wound roll.'}, { name: 'Blight Bombardment', desc: 'At the start of your Shooting phase, select one enemy unit within 30" of and visible to this model. Until the end of the phase, each time a friendly DEATH GUARD model makes a ranged attack that targets that unit, re-roll a Hit roll of 1 (if that attack is made with a Blast weapon, you can re-roll the Hit roll instead).'} ], leader: 'This model can be attached to the following units: <ul><li>Blightlord Terminators</li><li>Deathshroud Terminators</li></ul>' }, keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'LORD OF VIRULENCE'], faction: ['DEATH GUARD'] } },
-        { id: 'typhus', name: 'Typhus', stats: { M: '5"', T: '7', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Lakrimae', type: 'Melee', profiles: [ { name: 'Strike', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 6</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 9</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 3</span>, [<span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 12</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: ['<span class="kw-core">Deep Strike</span>', 'Leader'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Destroyer Hive', desc: 'While this model is leading a unit, each time a melee attack targets that unit, subtract 1 from the Hit roll.' }, { name: 'Eater Plague (Psychic)', desc: 'In your Shooting phase, you can select one enemy unit within 18" of and visible to this PSYKER (excluding units with the Lone Operative ability that are not part of an Attached unit and are not within 12" of this PSYKER) and roll one D6: on a 1, this PSYKER’s unit suffers D3 mortal wounds; on a 2-5, that enemy unit suffers D6 mortal wounds; on a 6, that enemy unit suffers D3+3 mortal wounds.' } ], leader: 'This model can be attached to the following units: <ul><li>Blightlord Terminators</li><li>Deathshroud Terminators</li><li>Poxwalkers</li></ul>' }, keywords: { main: ['INFANTRY', 'CHARACTER', 'PSYKER', 'EPIC HERO', 'CHAOS', 'NURGLE', 'TERMINATOR', 'TYPHUS'], faction: ['DEATH GUARD'] } },
-        { id: 'blightlord_terminators', name: 'Blightlord Terminators', stats: { M: '5"', T: '7', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Combi-bolter', type: 'Ranged', profiles: [{ name: '', profile: '<span class="kw-range">Range: 24"</span>, <span class="kw-attacks">A: 2</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 4</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>, <span class="kw-spec">RAPID FIRE 2</span>]' }]}, { name: 'Plague spewer', type: 'Ranged', profiles: [{ name: '', profile: '<span class="kw-range">Range: 12"</span>, <span class="kw-attacks">A: D6</span>, <span class="kw-skill">BS: N/A</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-neg">ANTI-INFANTRY 2+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">TORRENT</span>]' }]}, { name: 'Bubotic blade', type: 'Melee', profiles: [{ name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>]' }]}, { name: 'Close combat weapon', type: 'Melee', profiles: [{ name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 4</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>' }]} ], abilities: { core: ['<span class="kw-core">Deep Strike</span>'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Blistering Fusillade', desc: 'If this unit has a Starting Strength of 5 or more, or if a CHARACTER is leading this unit, then each time a model in this unit makes a ranged attack that targets an Afflicted unit, improve the Strength and Armour Penetration characteristics of that attack by 1.' } ] }, keywords: { main: ['INFANTRY', 'CHAOS', 'NURGLE', 'TERMINATOR', 'BLIGHTLORD TERMINATORS'], faction: ['DEATH GUARD']} },
-        { id: 'deathshroud_terminators', name: 'Deathshroud Terminators', stats: { M: '5"', T: '7', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Plaguespurt gauntlet', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 12"</span>, <span class="kw-attacks">A: D6</span>, <span class="kw-skill">BS: N/A</span>, <span class="kw-strength">S: 3</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-neg">ANTI-INFANTRY 4+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">PISTOL</span>, <span class="kw-spec">TORRENT</span>]' } ]}, { name: 'Manreaper', type: 'Melee', profiles: [ { name: 'Strike', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 4</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 8</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 4</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: ['<span class="kw-core">Deep Strike</span>'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Silent Bodyguard', desc: 'While a CHARACTER model is leading this unit, that CHARACTER model has the <span class="kw-core">Feel No Pain 4+</span> ability.' }, { name: 'Death Approaches', desc: 'In your Movement phase, when this unit is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 6" horizontally away from all Afflicted enemy units, and more than 9" horizontally away from all other enemy units.' } ], wargear_abilities: [ { name: 'Icon of Despair (Aura)', desc: 'While an enemy unit is within 6" of the bearer, worsen the Leadership characteristic of models in that unit by 1.' } ] }, keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'DEATHSHROUD TERMINATORS'], faction: ['DEATH GUARD'] } },
-        { id: 'foetid_bloat_drone', name: 'Foetid Bloat-drone', stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' }, wargear: [ { name: 'Heavy blight launcher', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: D6+2</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 3</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Plague probe', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: ['<span class="kw-core">Deadly Demise D3</span>'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Explosive Blight', desc: 'In your Shooting phase, each time this model makes an attack that destroys an enemy unit, before removing the last model in that unit from play, roll a D6, adding 1 to the result if that unit is Afflicted: on a 5+, each enemy unit within 6" of that model is Afflicted until the start of your next turn.' } ] }, keywords: { main: ['VEHICLE', 'FLY', 'CHAOS', 'NURGLE', 'DAEMON', 'FOETID BLOAT-DRONE'], faction: ['DEATH GUARD'] } },
-        { id: 'plagueburst_crawler', name: 'Plagueburst Crawler', stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' }, wargear: [ { name: 'Entropy cannon', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: 1</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: D6+1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Heavy slugger', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: 4</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Plagueburst mortar', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 48"</span>, <span class="kw-attacks">A: D6+3</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-spec">INDIRECT FIRE</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Armoured tracks', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 4+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>' } ]} ], abilities: { core: ['<span class="kw-core">Deadly Demise D3</span>'], faction: ["Nurgle's Gift (Aura)"], unit: [ { name: 'Spore-laced Shock Waves', desc: 'In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted: on a 6+, the unit being rolled for is struck by spores. After resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.' } ], damaged: 'While this model has 1-4 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll.' }, keywords: { main: ['VEHICLE', 'CHAOS', 'NURGLE', 'DAEMON', 'PLAGUEBURST CRAWLER'], faction: ['DEATH GUARD'] } }
+        { id: 'mortarion', name: 'Mortarion', stats: { M: '10"', T: '12', Sv: '2+', W: '16', Ld: '5+', OC: '6', invuln: '4+' }, wargear: [ { name: 'Lantern', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 24"</span>, <span class="kw-attacks">A: 1</span>, <span class="kw-skill">BS: 2+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: 3</span>, [<span class="kw-spec">PISTOL</span>, <span class="kw-pos">SUSTAINED HITS D3</span>]' } ]}, { name: 'Rotwind', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 24"</span>, <span class="kw-attacks">A: D6+3</span>, <span class="kw-skill">BS: 2+</span>, <span class="kw-strength">S: 7</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-neg">DEVASTATING WOUNDS</span>, <span class="kw-pos">LETHAL HITS</span>, <span class="kw-spec">PSYCHIC</span>]' } ]}, { name: 'Silence', type: 'Melee', profiles: [ { name: 'Strike', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 5</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 14</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: D6+1</span>, [<span class="kw-neg">DEVASTATING WOUNDS</span>, <span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 15</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>, <span class="kw-pos">SUSTAINED HITS 1</span>]' } ]} ], abilities: { core: [ { name: 'Deadly Demise D6', phases: ['any'], desc: 'When this model is destroyed, roll one D6 before removing it from play. On a 5-6, it explodes, and each unit within 6" suffers D6 mortal wounds.' }, { name: 'Deep Strike', phases: ['my_movement'], desc: 'During the Declare Battle Formations step, you can place this unit into Reserves instead of setting it up on the battlefield. If you do, in the Reinforcements step of one of your Movement phases you can set this unit up anywhere on the battlefield that is more than 9" horizontally away from all enemy models.' }, { name: 'Feel No Pain 5+', phases: ['any'], desc: 'Each time a wound is allocated to a model in this unit, roll one D6. On a 5+, that wound is not lost.' } ], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Host of Plagues', desc: 'At the end of your Movement phase, roll one D6 for each enemy unit within 6" of this model, adding 1 to the result if that enemy unit is Afflicted: on a 3+, that enemy unit suffers D3 mortal wounds.', phases: ['my_movement']}, { name: 'Lord of the Death Guard', desc: 'Once per turn, this model can use one of the Lord of the Death Guard abilities below.', phases: ['any'], sub_abilities: [ { name: 'Diseased Influence', desc: 'Just after an enemy unit ends a Normal, Advance or Fall Back move within 9" of a friendly DEATH GUARD unit that is within 6" of this model, if that DEATH GUARD unit is not within Engagement Range of one or more enemy units, it can make a Normal move of up to 5".', phases: ['opponent_movement'] }, { name: 'Boon of Contagion', desc: 'In the Fight phase, when a friendly DEATH GUARD unit within 6" of this model is selected as the target of an attack, this model can use this ability. If it does, until the end of the phase, each time a model in that DEATH GUARD unit is destroyed by a melee attack, if that model has not fought this phase, roll one D6. On a 2+, do not remove it from play; that destroyed model can fight after the attacking unit has finished making its attacks, and it is then removed from play.', phases: ['fight'] }, { name: 'Inflamed Reprisal', desc: 'In your opponent’s Shooting phase, when a friendly DEATH GUARD unit within 6" of this model is selected as the target of an attack, this model can use this ability. If it does, after the attacking unit has finished making its attacks, that DEATH GUARD unit can shoot as if it were your Shooting phase, but when resolving those attacks it can only target that enemy unit (and only if it is an eligible target).', phases: ['opponent_shooting'] } ]}, { name: 'Supreme Commander', desc: 'If this model is in your army, it must be your WARLORD.', phases: ['pregame'] } ], damaged: 'While this model has 1-6 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll.' }, keywords: { main: ['MONSTER', 'CHARACTER', 'PSYKER', 'FLY', 'EPIC HERO', 'GRENADES', 'CHAOS', 'NURGLE', 'DAEMON', 'PRIMARCH', 'MORTARION'], faction: ['DEATH GUARD'] } },
+        { id: 'lord_of_virulence', name: 'Lord of Virulence', stats: { M: '5"', T: '7', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Twin plague spewer', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 12"</span>, <span class="kw-attacks">A: D6</span>, <span class="kw-skill">BS: N/A</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-neg">ANTI-INFANTRY 2+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">TORRENT</span>, <span class="kw-spec">TWIN-LINKED</span>]' } ]}, { name: 'Power fist', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 5</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: [{ name: 'Deep Strike', phases: ['my_movement'] }, { name: 'Leader', phases: ['pregame'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Virulent Aura', desc: 'While this model is leading a unit, each time a model in that unit makes a ranged attack, you can re-roll the Wound roll.', phases: ['my_shooting', 'opponent_shooting'] }, { name: 'Blight Bombardment', desc: 'At the start of your Shooting phase, select one enemy unit within 30" of and visible to this model. Until the end of the phase, each time a friendly DEATH GUARD model makes a ranged attack that targets that unit, re-roll a Hit roll of 1 (if that attack is made with a Blast weapon, you can re-roll the Hit roll instead).', phases: ['my_shooting']} ], leader: 'This model can be attached to the following units: <ul><li>Blightlord Terminators</li><li>Deathshroud Terminators</li></ul>' }, keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'LORD OF VIRULENCE'], faction: ['DEATH GUARD'] } },
+        { id: 'typhus', name: 'Typhus', stats: { M: '5"', T: '7', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Lakrimae', type: 'Melee', profiles: [ { name: 'Strike', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 6</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 9</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 3</span>, [<span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 12</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: [{ name: 'Deep Strike', phases: ['my_movement'] }, { name: 'Leader', phases: ['pregame'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Destroyer Hive', desc: 'While this model is leading a unit, each time a melee attack targets that unit, subtract 1 from the Hit roll.', phases: ['fight'] }, { name: 'Host of the Destroyer Plague', desc: 'While this model is leading a unit, models in that unit have the Feel No Pain 6+ ability. If that unit is a Poxwalkers unit, models in that unit have the Feel No Pain 5+ ability instead.', phases: ['any'] }, { name: 'Eater Plague (Psychic)', desc: 'In your Shooting phase, you can select one enemy unit within 18" of and visible to this PSYKER (excluding units with the Lone Operative ability that are not part of an Attached unit and are not within 12" of this PSYKER) and roll one D6: on a 1, this PSYKER’s unit suffers D3 mortal wounds; on a 2-5, that enemy unit suffers D6 mortal wounds; on a 6, that enemy unit suffers D3+3 mortal wounds.', phases: ['my_shooting'] } ], leader: 'This model can be attached to the following units: <ul><li>Blightlord Terminators</li><li>Deathshroud Terminators</li><li>Poxwalkers</li></ul>' }, keywords: { main: ['INFANTRY', 'CHARACTER', 'PSYKER', 'EPIC HERO', 'CHAOS', 'NURGLE', 'TERMINATOR', 'TYPHUS'], faction: ['DEATH GUARD'] } },
+        { id: 'blightlord_terminators', name: 'Blightlord Terminators', stats: { M: '5"', T: '7', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Combi-bolter', type: 'Ranged', profiles: [{ name: '', profile: '<span class="kw-range">Range: 24"</span>, <span class="kw-attacks">A: 2</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 4</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>, <span class="kw-spec">RAPID FIRE 2</span>]' }]}, { name: 'Plague spewer', type: 'Ranged', profiles: [{ name: '', profile: '<span class="kw-range">Range: 12"</span>, <span class="kw-attacks">A: D6</span>, <span class="kw-skill">BS: N/A</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-neg">ANTI-INFANTRY 2+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">TORRENT</span>]' }]}, { name: 'Bubotic blade', type: 'Melee', profiles: [{ name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>]' }]}, { name: 'Close combat weapon', type: 'Melee', profiles: [{ name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 4</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>' }]} ], abilities: { core: [{ name: 'Deep Strike', phases: ['my_movement'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Blistering Fusillade', desc: 'If this unit has a Starting Strength of 5 or more, or if a CHARACTER is leading this unit, then each time a model in this unit makes a ranged attack that targets an Afflicted unit, improve the Strength and Armour Penetration characteristics of that attack by 1.', phases: ['my_shooting'] } ] }, keywords: { main: ['INFANTRY', 'CHAOS', 'NURGLE', 'TERMINATOR', 'BLIGHTLORD TERMINATORS'], faction: ['DEATH GUARD']} },
+        { id: 'deathshroud_terminators', name: 'Deathshroud Terminators', stats: { M: '5"', T: '7', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' }, wargear: [ { name: 'Plaguespurt gauntlet', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 12"</span>, <span class="kw-attacks">A: D6</span>, <span class="kw-skill">BS: N/A</span>, <span class="kw-strength">S: 3</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-neg">ANTI-INFANTRY 4+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">PISTOL</span>, <span class="kw-spec">TORRENT</span>]' } ]}, { name: 'Manreaper', type: 'Melee', profiles: [ { name: 'Strike', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 4</span>, <span class="kw-skill">WS: 2+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 8</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 4</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: [{ name: 'Deep Strike', phases: ['my_movement'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Silent Bodyguard', desc: 'While a CHARACTER model is leading this unit, that CHARACTER model has the Feel No Pain 4+ ability.', phases: ['any'] }, { name: 'Death Approaches', desc: 'In your Movement phase, when this unit is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 6" horizontally away from all Afflicted enemy units, and more than 9" horizontally away from all other enemy units.', phases: ['my_movement'] } ], wargear_abilities: [ { name: 'Icon of Despair (Aura)', desc: 'While an enemy unit is within 6" of the bearer, worsen the Leadership characteristic of models in that unit by 1.', phases: ['aura'] } ] }, keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'DEATHSHROUD TERMINATORS'], faction: ['DEATH GUARD'] } },
+        { id: 'foetid_bloat_drone', name: 'Foetid Bloat-drone', stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' }, wargear: [ { name: 'Heavy blight launcher', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: D6+2</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -2</span>, <span class="kw-damage">D: 3</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Plague probe', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 3+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]} ], abilities: { core: [{ name: 'Deadly Demise D3', desc: 'When this model is destroyed, roll one D6 before removing it from play. On a 5+, it explodes, and each unit within 3" suffers D3 mortal wounds.', phases: ['any'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Explosive Blight', desc: 'In your Shooting phase, each time this model makes an attack that destroys an enemy unit, before removing the last model in that unit from play, roll a D6, adding 1 to the result if that unit is Afflicted: on a 5+, each enemy unit within 6" of that model is Afflicted until the start of your next turn.', phases: ['my_shooting'] } ] }, keywords: { main: ['VEHICLE', 'FLY', 'CHAOS', 'NURGLE', 'DAEMON', 'FOETID BLOAT-DRONE'], faction: ['DEATH GUARD'] } },
+        { id: 'plagueburst_crawler', name: 'Plagueburst Crawler', stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' }, wargear: [ { name: 'Entropy cannon', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: 1</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 10</span>, <span class="kw-ap">AP: -3</span>, <span class="kw-damage">D: D6+1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Heavy slugger', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 36"</span>, <span class="kw-attacks">A: 4</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 5</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 1</span>, [<span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Plagueburst mortar', type: 'Ranged', profiles: [ { name: '', profile: '<span class="kw-range">Range: 48"</span>, <span class="kw-attacks">A: D6+3</span>, <span class="kw-skill">BS: 3+</span>, <span class="kw-strength">S: 8</span>, <span class="kw-ap">AP: -1</span>, <span class="kw-damage">D: 2</span>, [<span class="kw-spec">BLAST</span>, <span class="kw-spec">INDIRECT FIRE</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, { name: 'Armoured tracks', type: 'Melee', profiles: [ { name: '', profile: '<span class="kw-range">Melee</span>, <span class="kw-attacks">A: 3</span>, <span class="kw-skill">WS: 4+</span>, <span class="kw-strength">S: 6</span>, <span class="kw-ap">AP: 0</span>, <span class="kw-damage">D: 1</span>' } ]} ], abilities: { core: [{ name: 'Deadly Demise D3', desc: 'When this model is destroyed, roll one D6 before removing it from play. On a 5+, it explodes, and each unit within 3" suffers D3 mortal wounds.', phases: ['any'] }], faction: [{ name: "Nurgle's Gift (Aura)", desc: 'While an enemy unit is within Contagion Range of this unit, worsen that enemy unit’s Leadership and Objective Control characteristics by 1.', phases: ['aura'] }], unit: [ { name: 'Spore-laced Shock Waves', desc: 'In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted: on a 6+, the unit being rolled for is struck by spores. After resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.', phases: ['my_shooting'] } ], damaged: 'While this model has 1-4 wounds remaining, each time this model makes an attack, subtract 1 from the Hit roll.' }, keywords: { main: ['VEHICLE', 'CHAOS', 'NURGLE', 'DAEMON', 'PLAGUEBURST CRAWLER'], faction: ['DEATH GUARD'] } }
     ];
 
-    // --- JAVASCRIPT LOGIC (Updated to build segmented layout) ---
-    const unitListEl = document.getElementById('unit-list');
-    const unitDetailsHeaderEl = document.getElementById('unit-details-header');
-    const unitDetailsEl = document.getElementById('unit-details');
+    const gamePhases = [
+        { id: 'my_movement', label: "My Turn - Movement" }, { id: 'my_shooting', label: "My Turn - Shooting" },
+        { id: 'my_charge', label: "My Turn - Charge" }, { id: 'fight', label: "My Turn - Fight" },
+        { id: 'opponent_movement', label: "Opponent's - Movement" }, { id: 'opponent_shooting', label: "Opponent's - Shooting" },
+        { id: 'opponent_charge', label: "Opponent's - Charge" }, { id: 'fight', label: "Opponent's - Fight" },
+    ];
+    let currentPhaseIndex = -1, selectedUnitId = null, woundTrackers = [];
 
-    function displayUnitDetails(unitId) {
+    const unitListEl = document.getElementById('unit-list'), unitDetailsWrapperEl = document.getElementById('unit-details-wrapper'),
+        unitDetailsHeaderEl = document.getElementById('unit-details-header'), unitDetailsEl = document.getElementById('unit-details'),
+        phaseNameEl = document.getElementById('current-phase-name'), nextPhaseBtn = document.getElementById('next-phase-btn'),
+        unitNameDisplayEl = document.getElementById('unit-name-display'), unitCountWrapperEl = document.getElementById('unit-count-wrapper'),
+        unitCountSelectorEl = document.getElementById('unit-count-selector');
+
+    function updatePhase() {
+        currentPhaseIndex = (currentPhaseIndex + 1) % gamePhases.length;
+        phaseNameEl.textContent = gamePhases[currentPhaseIndex].label;
+        nextPhaseBtn.textContent = "Next Phase";
+        if (selectedUnitId) { displayUnitDetails(selectedUnitId, true); }
+    }
+
+    function getHighlightClass(ability) {
+        if (!ability?.phases || currentPhaseIndex < 0) return '';
+        const currentPhaseId = gamePhases[currentPhaseIndex].id;
+        if (ability.phases.includes(currentPhaseId)) return 'phase-highlight';
+        if (ability.phases.includes('aura')) return 'aura-highlight';
+        if (ability.phases.includes('any') && (ability.name.includes("Feel No Pain") && (currentPhaseId.includes("shooting") || currentPhaseId.includes("fight")))) {
+            return 'phase-highlight';
+        }
+        return '';
+    }
+
+    function changeWounds(index, amount) {
+        const tracker = woundTrackers[index];
+        if (!tracker) return;
+        tracker.current = Math.max(0, Math.min(tracker.max, tracker.current + amount));
+        document.getElementById(`wound-display-${index}`).textContent = tracker.current;
+        const trackerRow = document.getElementById(`wound-tracker-${index}`);
+        trackerRow.classList.remove('deadly-demise-highlight');
+        if (tracker.current === 0) {
+            const unit = codexData.find(u => u.id === selectedUnitId);
+            if (unit.abilities.core.some(a => a.name.includes('Deadly Demise'))) {
+                trackerRow.classList.add('deadly-demise-highlight');
+            }
+        }
+    }
+
+    function renderWoundTrackers() {
+        const container = document.getElementById('multi-wound-tracker-container');
+        if (!container) return;
+        container.innerHTML = '';
+        woundTrackers.forEach((tracker, index) => {
+            container.innerHTML += `
+                <div class="wound-tracker-instance" id="wound-tracker-${index}">
+                    <span class="wound-tracker-label">Model ${index + 1}</span>
+                    <div>
+                        <button class="wound-btn wound-minus-btn" data-index="${index}">-</button>
+                        <span id="wound-display-${index}" class="wound-display">${tracker.current}</span> / ${tracker.max} W
+                        <button class="wound-btn wound-plus-btn" data-index="${index}">+</button>
+                    </div>
+                </div>`;
+        });
+        document.querySelectorAll('.wound-minus-btn').forEach(btn => btn.addEventListener('click', (e) => changeWounds(e.target.dataset.index, -1)));
+        document.querySelectorAll('.wound-plus-btn').forEach(btn => btn.addEventListener('click', (e) => changeWounds(e.target.dataset.index, 1)));
+    }
+
+    function updateUnitCount(count) {
+        const unit = codexData.find(u => u.id === selectedUnitId);
+        if (!unit) return;
+        const maxWounds = parseInt(unit.stats.W);
+        woundTrackers = Array.from({ length: count }, () => ({ current: maxWounds, max: maxWounds }));
+        renderWoundTrackers();
+    }
+    
+    function displayUnitDetails(unitId, isPhaseUpdate = false) {
+        if (!isPhaseUpdate) {
+            selectedUnitId = unitId;
+            unitCountWrapperEl.style.display = 'block';
+            unitCountSelectorEl.value = 1;
+        }
         const unit = codexData.find(u => u.id === unitId);
         if (!unit) return;
 
-        unitDetailsHeaderEl.innerHTML = unit.name;
+        // This is the key for wound persistence. The woundTrackers array is ONLY reset if it's NOT a phase update.
+        if (!isPhaseUpdate) {
+            updateUnitCount(1);
+        }
 
-        // --- Column 1: Stats & Weapons ---
-        let col1HTML = `<div class="details-column">`;
-        col1HTML += `
-            <div class="info-card">
-                <div style="display: flex; align-items: center;">
-                    <table class="stats-table">
-                        <thead><tr><th>M</th><th>T</th><th>Sv</th><th>W</th><th>Ld</th><th>OC</th></tr></thead>
-                        <tbody><tr><td>${unit.stats.M}</td><td>${unit.stats.T}</td><td>${unit.stats.Sv}</td><td>${unit.stats.W}</td><td>${unit.stats.Ld}</td><td>${unit.stats.OC}</td></tr></tbody>
-                    </table>
-                    ${unit.stats.invuln ? `<div class="invuln-save"><strong>${unit.stats.invuln}</strong><div>INVULN</div></div>` : ''}
-                </div>
-            </div>`;
+        unitNameDisplayEl.innerHTML = unit.name;
 
+        let col1HTML = `<div class="details-column"><div class="info-card"><div style="display: flex; align-items: center;"><table class="stats-table"><thead><tr><th>M</th><th>T</th><th>Sv</th><th>W</th><th>Ld</th><th>OC</th></tr></thead><tbody><tr><td>${unit.stats.M}</td><td>${unit.stats.T}</td><td>${unit.stats.Sv}</td><td>${unit.stats.W}</td><td>${unit.stats.Ld}</td><td>${unit.stats.OC}</td></tr></tbody></table>${unit.stats.invuln ? `<div class="invuln-save"><strong>${unit.stats.invuln}</strong><div>INVULN</div></div>` : ''}</div></div><div class="info-card"><h3 class="section-title">Wound Tracker</h3><div id="multi-wound-tracker-container"></div></div>`;
         const rangedWeapons = unit.wargear.filter(w => w.type === 'Ranged');
-        const meleeWeapons = unit.wargear.filter(w => w.type === 'Melee');
-
         if (rangedWeapons.length > 0) {
             col1HTML += `<div class="info-card"><h3 class="section-title">Ranged Weapons</h3>`;
-            rangedWeapons.forEach(weapon => {
-                col1HTML += `<div class="item"><strong class="wargear-name">${weapon.name}</strong>`;
-                weapon.profiles.forEach(p => { col1HTML += `<div class="weapon-profile">${p.name ? `<div class="weapon-profile-name">${p.name}</div>` : ''}<p>${p.profile}</p></div>`; });
-                col1HTML += `</div>`;
-            });
+            rangedWeapons.forEach(weapon => { col1HTML += `<div class="item"><strong class="wargear-name">${weapon.name}</strong>`; weapon.profiles.forEach(p => { col1HTML += `<div class="weapon-profile">${p.name ? `<div class="weapon-profile-name">${p.name}</div>` : ''}<p>${p.profile}</p></div>`; }); col1HTML += `</div>`; });
             col1HTML += `</div>`;
         }
+        const meleeWeapons = unit.wargear.filter(w => w.type === 'Melee');
         if (meleeWeapons.length > 0) {
             col1HTML += `<div class="info-card"><h3 class="section-title">Melee Weapons</h3>`;
-            meleeWeapons.forEach(weapon => {
-                col1HTML += `<div class="item"><strong class="wargear-name">${weapon.name}</strong>`;
-                weapon.profiles.forEach(p => { col1HTML += `<div class="weapon-profile">${p.name ? `<div class="weapon-profile-name">${p.name}</div>` : ''}<p>${p.profile}</p></div>`; });
-                col1HTML += `</div>`;
-            });
+            meleeWeapons.forEach(weapon => { col1HTML += `<div class="item"><strong class="wargear-name">${weapon.name}</strong>`; weapon.profiles.forEach(p => { col1HTML += `<div class="weapon-profile">${p.name ? `<div class="weapon-profile-name">${p.name}</div>` : ''}<p>${p.profile}</p></div>`; }); col1HTML += `</div>`; });
             col1HTML += `</div>`;
         }
         col1HTML += `</div>`;
 
-        // --- Column 2: Abilities & Keywords ---
-        let col2HTML = `<div class="details-column">`;
-        col2HTML += `<div class="info-card">`;
+        let col2HTML = `<div class="details-column"><div class="info-card">`;
         if (unit.abilities.wargear_abilities) {
             col2HTML += `<h3 class="section-title">Wargear Abilities</h3>`;
-             unit.abilities.wargear_abilities.forEach(a => { col2HTML += `<div class="item"><strong class="wargear-name">${a.name}</strong><p>${a.desc}</p></div>`; });
+             unit.abilities.wargear_abilities.forEach(a => { col2HTML += `<div class="item ${getHighlightClass(a)}"><strong class="wargear-name">${a.name}</strong><p>${a.desc}</p></div>`; });
         }
         col2HTML += `<h3 class="section-title">Abilities</h3>`;
-        if (unit.abilities.core) { col2HTML += `<div class="item"><strong class="ability-name">Core</strong><p>${unit.abilities.core.join(', ')}</p></div>`; }
-        if (unit.abilities.faction) { col2HTML += `<div class="item"><strong class="ability-name">Faction</strong><p>${unit.abilities.faction.join(', ')}</p></div>`; }
+        if (unit.abilities.core) {
+            const corePills = unit.abilities.core.map(a => `<span class="core-ability-pill ${getHighlightClass(a)}">${a.name}</span>`).join('');
+            col2HTML += `<div class="item"><strong class="ability-name">Core</strong><div class="core-ability-list">${corePills}</div></div>`;
+        }
+        if (unit.abilities.faction) {
+            unit.abilities.faction.forEach(a => { col2HTML += `<div class="item ${getHighlightClass(a)}"><strong class="ability-name">Faction</strong><p>${a.name}</p></div>`; });
+        }
         if (unit.abilities.unit) {
             unit.abilities.unit.forEach(a => {
-                col2HTML += `<div class="item"><strong class="ability-name">${a.name}</strong><p>${a.desc}</p>`;
-                if (a.sub_abilities) {
-                    a.sub_abilities.forEach(sub => { col2HTML += `<div class="sub-item item"><strong class="ability-name">${sub.name}</strong><p>${sub.desc}</p></div>`; });
-                }
+                col2HTML += `<div class="item ${getHighlightClass(a)}"><strong class="ability-name">${a.name}</strong><p>${a.desc}</p>`;
+                if (a.sub_abilities) { a.sub_abilities.forEach(sub => { col2HTML += `<div class="sub-item item ${getHighlightClass(sub)}"><strong class="ability-name">${sub.name}</strong><p>${sub.desc}</p></div>`; }); }
                 col2HTML += `</div>`;
             });
         }
         if (unit.abilities.leader) { col2HTML += `<div class="item"><strong class="ability-name">Leader</strong><p>${unit.abilities.leader}</p></div>`; }
         if (unit.abilities.damaged) { col2HTML += `<div class="item"><strong class="ability-name">Damaged</strong><p>${unit.abilities.damaged}</p></div>`; }
         col2HTML += `</div>`;
-        
         col2HTML += `<div class="info-card keywords"><p>${unit.keywords.main.join(' • ')}</p><p><span class="keywords-faction">FACTION KEYWORDS:</span> ${unit.keywords.faction.join(', ')}</p></div>`;
         col2HTML += `</div>`;
 
         unitDetailsEl.innerHTML = col1HTML + col2HTML;
+        
+        renderWoundTrackers();
 
-        document.querySelectorAll('.unit-selector').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.unitId === unitId) {
-                btn.classList.add('active');
-            }
-        });
+        if (!isPhaseUpdate) {
+            document.querySelectorAll('.unit-selector').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.unitId === unitId) { btn.classList.add('active'); }
+            });
+        }
     }
 
     function populateUnitList() {
         unitListEl.innerHTML = '<h2>Datasheets</h2>';
         codexData.sort((a, b) => a.name.localeCompare(b.name)).forEach(unit => {
             const button = document.createElement('button');
-            button.innerText = unit.name;
-            button.className = 'unit-selector';
-            button.dataset.unitId = unit.id;
-            button.onclick = () => displayUnitDetails(unit.id);
+            button.innerText = unit.name; button.className = 'unit-selector';
+            button.dataset.unitId = unit.id; button.onclick = () => displayUnitDetails(unit.id);
             unitListEl.appendChild(button);
         });
     }
 
-    populateUnitList();
-    if (codexData.length > 0) {
-        displayUnitDetails(codexData[0].id);
+    // Populate the model count selector up to 20
+    for (let i = 1; i <= 20; i++) {
+        unitCountSelectorEl.innerHTML += `<option value="${i}">${i}</option>`;
     }
+
+    nextPhaseBtn.addEventListener('click', updatePhase);
+    unitCountSelectorEl.addEventListener('change', (e) => updateUnitCount(parseInt(e.target.value)));
+    populateUnitList();
+    if (codexData.length > 0) { displayUnitDetails(codexData[0].id); }
 </script>
 
 </body>
