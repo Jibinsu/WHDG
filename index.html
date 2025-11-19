@@ -71,7 +71,7 @@
             width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font-size: 1.2rem;
         }
 
-        /* --- Body --- */
+        /* --- Layout --- */
         #main-body { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
         
         #unit-list {
@@ -162,10 +162,16 @@
         
         .active-phase { border-color: var(--highlight-border); background: var(--highlight-bg); }
         .enhancement { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
-        .deadly-demise { color: var(--kw-neg); font-weight: 900; display: none; text-align: center; font-size: 0.85rem; margin-top: 8px; animation: pulse 1s infinite; text-transform: uppercase; letter-spacing: 1px; }
-        .battleshock { display: none; text-align: center; font-size: 0.8rem; color: var(--warning-text); font-weight: 800; margin-top: 5px; }
+        
+        .status-alert { display: none; font-weight: 900; text-align: center; font-size: 0.85rem; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 5px; border-radius: 4px; }
+        .deadly-demise { color: var(--kw-neg); display: block; animation: pulse 2s infinite; }
+        .battleshock { background: var(--warning-text); color: var(--surface-color); display: block; }
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        .k-lethal, .k-sus { color: var(--kw-pos); font-weight: 700; } 
+        .k-anti, .k-dev { color: var(--kw-neg); font-weight: 700; } 
+        .k-blast { color: var(--kw-spec); font-weight: 700; }
     </style>
 </head>
 <body class="">
@@ -222,7 +228,7 @@
 </div>
 
 <script>
-    // --- 1. GAME DATA ---
+    // --- 1. DATA DEFINITIONS ---
     const PROFILES = {
         loc: {
             name: `Lord of Contagion`,
@@ -433,88 +439,76 @@
         ]
     };
 
-    // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_final_v6';
+    // --- 3. STATE & ENGINE ---
+    const STATE_KEY = 'dg_chosen_safe_v7';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
-        activeId: 'rules', wounds: {},
-        theme: 'light'
+        activeId: 'rules', wounds: {}, theme: 'light'
     };
 
-    function saveState() {
-        localStorage.setItem(STATE_KEY, JSON.stringify(gameState));
-        updateConsole();
-    }
-
-    function loadState() {
-        const saved = localStorage.getItem(STATE_KEY);
-        if(saved) {
-            try { gameState = JSON.parse(saved); } catch(e) { console.error(e); }
+    function initApp() {
+        // 1. Try Load
+        try {
+            const saved = localStorage.getItem(STATE_KEY);
+            if(saved) {
+                gameState = JSON.parse(saved);
+                console.log("State Loaded");
+            }
+        } catch(e) {
+            console.error("Save corrupted, resetting.", e);
+            resetGame();
         }
-        applyTheme(gameState.theme || 'light');
+
+        // 2. Render Side Bar
+        const listEl = document.getElementById('unit-list');
+        listEl.innerHTML = '';
+        let lastGroup = '';
+        TASK_FORCES.forEach(tf => {
+            if(tf.group !== lastGroup) {
+                const grp = document.createElement('div');
+                grp.className = 'group-label';
+                grp.textContent = tf.group;
+                listEl.appendChild(grp);
+                lastGroup = tf.group;
+            }
+            const btn = document.createElement('button');
+            btn.id = `btn_${tf.id}`;
+            btn.className = `unit-btn ${tf.type === 'combo' ? 'combo-btn' : ''} ${tf.id === 'rules' ? 'rules-btn' : ''}`;
+            btn.textContent = tf.name;
+            btn.onclick = () => loadView(tf.id);
+            listEl.appendChild(btn);
+        });
+
+        // 3. Initial Render
+        applyTheme(gameState.theme);
         updateConsole();
         updatePhaseDisplay();
         updateStratBar();
+        loadView(gameState.activeId || 'rules');
+        
+        // 4. Wake Lock
+        document.addEventListener('click', requestWakeLock, {once:true});
     }
 
-    function resetGame() {
-        if(confirm("Reset Game? This clears all wounds, CP, and VP.")) {
-            const currentTheme = gameState.theme;
-            gameState = { turn: 0, cp: 0, vp: 0, phaseIdx: -1, activeId: 'rules', wounds: {}, theme: currentTheme };
-            saveState();
-            loadView('rules');
-            updatePhaseDisplay();
-            updateStratBar();
-        }
-    }
-
-    function toggleTheme() {
-        gameState.theme = gameState.theme === 'light' ? 'dark' : 'light';
-        applyTheme(gameState.theme);
-        saveState();
-    }
-
-    function applyTheme(theme) {
-        const btn = document.getElementById('theme-toggle');
-        if(theme === 'dark') {
-            document.body.classList.add('dark-mode');
-            btn.innerText = '☀';
-        } else {
-            document.body.classList.remove('dark-mode');
-            btn.innerText = '◐';
-        }
-    }
-
-    // --- 4. RENDER LOGIC ---
-    
-    // Side Bar
-    const listEl = document.getElementById('unit-list');
-    let lastGroup = '';
-    TASK_FORCES.forEach(tf => {
-        if(tf.group !== lastGroup) {
-            const grp = document.createElement('div');
-            grp.className = 'group-label';
-            grp.textContent = tf.group;
-            listEl.appendChild(grp);
-            lastGroup = tf.group;
-        }
-        const btn = document.createElement('button');
-        btn.id = `btn_${tf.id}`;
-        btn.className = `unit-btn ${tf.type === 'combo' ? 'combo-btn' : ''} ${tf.id === 'rules' ? 'rules-btn' : ''}`;
-        btn.textContent = tf.name;
-        btn.onclick = () => loadView(tf.id);
-        listEl.appendChild(btn);
-    });
-
+    // --- 4. RENDER ---
     function loadView(id) {
+        // Validate ID exists (Crash Prevention)
+        const data = TASK_FORCES.find(t => t.id === id);
+        if(!data) {
+            console.error("Invalid ID:", id);
+            loadView('rules'); 
+            return;
+        }
+
         gameState.activeId = id;
         saveState();
         
+        // UI Updates
         document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn_${id}`).classList.add('active');
+        const activeBtn = document.getElementById(`btn_${id}`);
+        if(activeBtn) activeBtn.classList.add('active');
 
-        const data = TASK_FORCES.find(t => t.id === id);
         const container = document.getElementById('content-scroll');
         
         if(data.type === 'rules') {
@@ -532,6 +526,8 @@
         
         unitList.forEach((u, idx) => {
             const prof = PROFILES[u.profile];
+            if(!prof) { console.error("Missing Profile:", u.profile); return; } // Safety check
+
             const uid = `${id}_${idx}`; 
             
             html += `<div class="split-col"><div class="card" id="card_${uid}">`;
@@ -540,6 +536,7 @@
                 <div class="unit-role">${u.label}</div>
             </div>`;
 
+            // Stats
             html += `<div class="stats-row">
                 <div class="stat-box"><span class="stat-label">M</span><div class="stat-val">${prof.stats.M}</div></div>
                 <div class="stat-box"><span class="stat-label">T</span><div class="stat-val">${prof.stats.T}</div></div>
@@ -550,6 +547,7 @@
                 <div class="stat-box invuln-box"><span class="stat-label">INV</span><div class="stat-val">${prof.stats.invuln}</div></div>
             </div>`;
 
+            // Wounds
             html += `<div>`;
             const maxW = parseInt(prof.stats.W);
             for(let i=0; i<u.count; i++) {
@@ -566,82 +564,61 @@
                 </div>`;
             }
             
-            // Visual Alerts Placeholder
+            // Alerts
             html += `<div class="status-alert deadly-demise" id="dd_${uid}">⚠️ DEADLY DEMISE CHECK</div>`;
             html += `<div class="status-alert battleshock" id="bs_${uid}">⚠️ BATTLE-SHOCK TEST<br>(Below Half Strength)</div>`;
-            
             html += `</div>`;
 
+            // Weapons
             html += `<div style="margin-top:15px;">`;
-            prof.wargear.forEach(w => {
-                html += `<div class="weapon-row">
-                    <div class="weapon-header"><div class="weapon-name">${w.name}</div></div>
-                    <table class="profile-table">
-                        <thead><tr><th>RNG</th><th>A</th><th>HIT</th><th>S</th><th>AP</th><th>D</th></tr></thead>
-                        <tbody><tr><td>${w.stats.range}</td><td>${w.stats.a}</td><td>${w.stats.bs||w.stats.ws}</td><td>${w.stats.s}</td><td>${w.stats.ap}</td><td>${w.stats.d}</td></tr></tbody>
-                    </table>
-                    <div style="font-size:0.7rem; margin-top:2px;">${formatKw(w.kw)}</div>
-                </div>`;
-            });
+            if(prof.wargear) {
+                prof.wargear.forEach(w => {
+                    html += `<div class="weapon-row">
+                        <div class="weapon-header"><div class="weapon-name">${w.name}</div></div>
+                        <table class="profile-table">
+                            <thead><tr><th>RNG</th><th>A</th><th>HIT</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                            <tbody><tr><td>${w.stats.range}</td><td>${w.stats.a}</td><td>${w.stats.bs||w.stats.ws}</td><td>${w.stats.s}</td><td>${w.stats.ap}</td><td>${w.stats.d}</td></tr></tbody>
+                        </table>
+                        <div style="font-size:0.7rem; margin-top:2px;">${formatKw(w.kw)}</div>
+                    </div>`;
+                });
+            }
             
-            prof.abilities.forEach(a => {
-                const pId = (gameState.phaseIdx >= 0) ? PHASES[gameState.phaseIdx].id : '';
-                const active = a.phases.includes(pId) || a.phases.includes('any');
-                html += `<div class="ability ${active?'active-phase':''} ${a.name.includes('ENHANCEMENT')?'enhancement':''}">
-                    <div class="ability-name">${a.name}</div><div class="ability-desc">${a.desc}</div>
-                </div>`;
-            });
+            // Abilities
+            if(prof.abilities) {
+                prof.abilities.forEach(a => {
+                    const pId = (gameState.phaseIdx >= 0) ? PHASES[gameState.phaseIdx].id : '';
+                    const active = a.phases.includes(pId) || a.phases.includes('any');
+                    html += `<div class="ability ${active?'active-phase':''} ${a.name.includes('ENHANCEMENT')?'enhancement':''}">
+                        <div class="ability-name">${a.name}</div><div class="ability-desc">${a.desc}</div>
+                    </div>`;
+                });
+            }
             html += `</div></div></div>`;
         });
         html += `</div>`;
         container.innerHTML = html;
 
-        // Post-render status check
-        const unitList = data.type === 'combo' ? data.units : [{ profile: data.profile, count: data.count }];
+        // Status Checks post-render
         unitList.forEach((u, idx) => {
-            checkUnitStatus(`${id}_${idx}`, u.count, parseInt(PROFILES[u.profile].stats.W));
+             const uid = `${id}_${idx}`;
+             if(PROFILES[u.profile]) {
+                 checkUnitStatus(uid, u.count, parseInt(PROFILES[u.profile].stats.W));
+             }
         });
     }
 
-    function updateStratBar() {
-        const bar = document.getElementById('strat-bar');
-        if(gameState.phaseIdx === -1) {
-            bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">Awaiting Deployment...</span>';
-            return;
-        }
-
-        const pId = PHASES[gameState.phaseIdx].id;
-        let key = pId; 
-        const strats = STRATAGEMS[key] || [];
-
-        if(strats.length === 0) {
-            bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">NO STRATAGEMS AVAILABLE</span>';
-            return;
-        }
-
-        let html = '';
-        strats.forEach((s, index) => {
-            // Using index ID to prevent string escape errors
-            html += `<div class="strat-pill ${s.type}" onclick="openStrat('${key}', ${index})">${s.name}</div>`;
-        });
-        bar.innerHTML = html;
-    }
+    // --- 5. LOGIC & UTILS ---
     
-    function openStrat(phaseKey, index) {
-        const s = STRATAGEMS[phaseKey][index];
-        // Simple alert using template literal
-        alert(`${s.name}\n\n${s.desc.replace(/<br>/g, "\n").replace(/<strong>/g, "").replace(/<\/strong>/g, "")}`);
+    function saveState() {
+        localStorage.setItem(STATE_KEY, JSON.stringify(gameState));
+        updateConsole();
     }
-
-    // --- 5. GAME ENGINE LOGIC ---
 
     function modW(key, diff, max, uid, count) {
         if(gameState.wounds[key] === undefined) gameState.wounds[key] = max;
-        
         let v = gameState.wounds[key] + diff;
-        if(v < 0) v = 0;
-        if(v > max) v = max;
-        
+        if(v < 0) v = 0; if(v > max) v = max;
         gameState.wounds[key] = v;
         saveState();
         
@@ -650,11 +627,13 @@
             el.innerText = v;
             el.style.color = (v === 0) ? 'var(--kw-neg)' : 'inherit';
         }
-
+        
+        // Trigger Deadly Demise visual only on death (downward)
         const baseUid = key.substring(0, key.lastIndexOf('_'));
-        if(v === 0) {
-            const ddEl = document.getElementById(`dd_${baseUid}`);
-            if(ddEl) ddEl.style.display = 'block';
+        const ddEl = document.getElementById(`dd_${baseUid}`);
+        if(ddEl && v === 0 && diff < 0) {
+            ddEl.style.display = 'block';
+            setTimeout(() => { ddEl.style.display = 'none'; }, 4000);
         }
 
         checkUnitStatus(uid, count, max);
@@ -664,20 +643,16 @@
         let deadModels = 0;
         for(let i=0; i<startCount; i++) {
             const k = `${uid}_${i}`;
-            // If undefined, it's alive (max health)
             const w = (gameState.wounds[k] !== undefined) ? gameState.wounds[k] : maxW;
             if(w === 0) deadModels++;
         }
         
         const currentModels = startCount - deadModels;
-        const halfStrengthThreshold = startCount / 2;
-        
         const bsEl = document.getElementById(`bs_${uid}`);
         const cardEl = document.getElementById(`card_${uid}`);
-        const sidebarBtn = document.getElementById(`btn_${uid.split('_')[0]}_${uid.split('_')[1]}`); // Approximation
-
+        
         if(bsEl && cardEl) {
-            if(currentModels < halfStrengthThreshold) {
+            if(currentModels < startCount/2) {
                 bsEl.style.display = 'block';
                 cardEl.classList.add('battleshock-active');
             } else {
@@ -685,6 +660,35 @@
                 cardEl.classList.remove('battleshock-active');
             }
         }
+    }
+
+    function updateStratBar() {
+        const bar = document.getElementById('strat-bar');
+        if(gameState.phaseIdx === -1) {
+            bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">Awaiting Deployment...</span>';
+            return;
+        }
+        
+        const pId = PHASES[gameState.phaseIdx].id;
+        const strats = STRATAGEMS[pId] || [];
+
+        if(strats.length === 0) {
+            bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">NO STRATAGEMS AVAILABLE</span>';
+            return;
+        }
+
+        let html = '';
+        strats.forEach((s, index) => {
+            html += `<div class="strat-pill ${s.type}" onclick="openStrat('${pId}', ${index})">${s.name}</div>`;
+        });
+        bar.innerHTML = html;
+    }
+
+    function openStrat(pId, idx) {
+        const s = STRATAGEMS[pId][idx];
+        // Clean HTML tags for alert box
+        const cleanDesc = s.desc.replace(/<br>/g, "\n").replace(/<strong>/g, "").replace(/<\/strong>/g, "");
+        alert(`${s.name}\n\n${cleanDesc}`);
     }
 
     function modRes(type, diff) {
@@ -717,11 +721,9 @@
             phaseName.innerText = p.label;
             btn.innerText = "NEXT PHASE";
             
-            // Contagion Logic
             let range = 9;
             if(gameState.turn === 1) range = 3;
             if(gameState.turn === 2) range = 6;
-            
             badge.style.display = 'inline-block';
             badge.innerText = `${range}" AURA`;
         }
@@ -729,7 +731,6 @@
 
     document.getElementById('next-phase-btn').onclick = () => {
         requestWakeLock();
-
         if(gameState.phaseIdx === -1) {
             gameState.phaseIdx = 0;
             gameState.turn = 1;
@@ -738,9 +739,7 @@
         } else {
             gameState.phaseIdx = (gameState.phaseIdx + 1) % PHASES.length;
             const p = PHASES[gameState.phaseIdx];
-
             if(gameState.phaseIdx === 0) gameState.turn++;
-
             if(p.cp) {
                 gameState.cp++;
                 const btn = document.getElementById('cp-val');
@@ -748,12 +747,39 @@
                 setTimeout(() => btn.style.color = '', 500);
             }
         }
-        
         saveState();
         updatePhaseDisplay();
         updateStratBar();
         loadView(gameState.activeId); 
     };
+
+    function resetGame() {
+        if(confirm("Reset Game? This clears all wounds, CP, and VP.")) {
+            const currentTheme = gameState.theme;
+            gameState = { turn: 0, cp: 0, vp: 0, phaseIdx: -1, activeId: 'rules', wounds: {}, theme: currentTheme };
+            saveState();
+            loadView('rules');
+            updatePhaseDisplay();
+            updateStratBar();
+        }
+    }
+
+    function toggleTheme() {
+        gameState.theme = gameState.theme === 'light' ? 'dark' : 'light';
+        applyTheme(gameState.theme);
+        saveState();
+    }
+
+    function applyTheme(theme) {
+        const btn = document.getElementById('theme-toggle');
+        if(theme === 'dark') {
+            document.body.classList.add('dark-mode');
+            btn.innerText = '☀';
+        } else {
+            document.body.classList.remove('dark-mode');
+            btn.innerText = '◐';
+        }
+    }
 
     function formatKw(str) {
         if(!str) return '';
@@ -766,15 +792,11 @@
     }
 
     async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                await navigator.wakeLock.request('screen');
-            }
-        } catch (err) { console.log('Wake Lock Error', err); }
+        try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch (err) {}
     }
 
-    loadState();
-    if(gameState.activeId) loadView(gameState.activeId);
+    // Boot
+    initApp();
 
 </script>
 </body>
