@@ -17,6 +17,7 @@
             --highlight-color: #27ae60; --alert-color: #c0392b;
             --console-bg: #1a1a1a; --console-text: #f1f1f1;
             --stat-bg: #f1f2f6;
+            --strat-dg: #27ae60; --strat-core: #7f8c8d;
         }
 
         html, body {
@@ -52,7 +53,7 @@
         #unit-list {
             width: 260px; flex-shrink: 0; background-color: #dfe4ea; 
             border-right: 1px solid var(--border-color); overflow-y: auto; padding: 10px;
-            padding-bottom: 80px; /* Space for footer */
+            padding-bottom: 120px; /* Space for footer */
         }
         .group-label { font-size: 0.7rem; font-weight: 900; color: #7f8c8d; margin: 12px 0 4px 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .unit-btn {
@@ -67,7 +68,24 @@
 
         /* Content Area */
         #unit-details-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-color); }
-        #content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 15px; }
+        #content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* --- Stratagem Bar --- */
+        #strat-bar {
+            background: #34495e; border-top: 1px solid #2c3e50;
+            padding: 8px 10px; display: flex; gap: 10px; overflow-x: auto;
+            white-space: nowrap; flex-shrink: 0; height: 50px; align-items: center;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* Hide scrollbar */
+        #strat-bar::-webkit-scrollbar { display: none; }
+        .strat-pill {
+            color: #fff; padding: 6px 12px; border-radius: 6px;
+            font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0; cursor: pointer;
+        }
+        .strat-pill.dg { background: var(--strat-dg); }
+        .strat-pill.core { background: var(--strat-core); }
 
         /* --- Bottom Console (Sticky) --- */
         #command-console {
@@ -140,6 +158,10 @@
         <div id="unit-details-wrapper">
             <div id="content-scroll"></div>
         </div>
+    </div>
+
+    <div id="strat-bar">
+        <span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">Awaiting Deployment...</span>
     </div>
 
     <div id="command-console">
@@ -322,16 +344,60 @@
         { id: 'opponent_end', label: 'End Opp Turn' }
     ];
 
-    // --- 2. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_state_v3';
+    // --- 2. STRATAGEMS (FROM SCREENSHOTS) ---
+    const STRATAGEMS = {
+        command: [
+            { name: "Blooming Pestilence (1CP)", desc: "DG: Extend Contagion Range / Aura", type: 'dg' },
+            { name: "Signal Pox (1CP)", desc: "DG: Select unit to be Afflicted", type: 'dg' },
+            { name: "Command Re-roll (1CP)", desc: "Core: Re-roll hit/wound/save/etc", type: 'core' },
+            { name: "New Orders (1CP)", desc: "Core: Fall back & Charge/Shoot?", type: 'core' },
+            { name: "Insane Bravery (1CP)", desc: "Core: Pass Battleshock", type: 'core' }
+        ],
+        movement: [
+            { name: "Blooming Pestilence (1CP)", desc: "DG: Extend Contagion Range / Aura", type: 'dg' }
+        ],
+        shooting: [
+            { name: "Blooming Pestilence (1CP)", desc: "DG: Extend Contagion Range / Aura", type: 'dg' },
+            { name: "Mortarion's Teachings (1CP)", desc: "DG: Buff Shooting attacks", type: 'dg' },
+            { name: "Grenade (1CP)", desc: "Core: 3+ causes MWs", type: 'core' },
+            { name: "Command Re-roll (1CP)", desc: "Core", type: 'core' }
+        ],
+        charge: [
+            { name: "Blooming Pestilence (1CP)", desc: "DG: Extend Contagion Range", type: 'dg' },
+            { name: "Sickening Impact (1CP)", desc: "DG: Impact hits / MWs on Charge", type: 'dg' },
+            { name: "Tank Shock (1CP)", desc: "Core: Vehicle MWs on charge", type: 'core' },
+            { name: "Heroic Intervention (1CP)", desc: "Core: Charge in Opp Charge phase (Mistakenly in My Phase in Screenshot?)", type: 'core' }
+        ],
+        fight: [
+            { name: "Blooming Pestilence (1CP)", desc: "DG", type: 'dg' },
+            { name: "Grim Reapers (1CP)", desc: "DG: Re-roll Hits/Wounds (Terminators)", type: 'dg' },
+            { name: "Undying Spite (1CP)", desc: "DG: Fight on Death", type: 'dg' },
+            { name: "Epic Challenge (1CP)", desc: "Core: Precision", type: 'core' },
+            { name: "Counter-Offensive (2CP)", desc: "Core: Interrupt", type: 'core' }
+        ],
+        opp_movement: [
+            { name: "Rapid Ingress (1CP)", desc: "Core: Deep Strike now", type: 'core' },
+            { name: "Fire Overwatch (1CP)", desc: "Core: Hit on 6s", type: 'core' }
+        ],
+        opp_shooting: [
+            { name: "Smokescreen (1CP)", desc: "Core: Stealth/Cover", type: 'core' },
+            { name: "Go To Ground (1CP)", desc: "Core: Cover/6++", type: 'core' }
+        ],
+        opp_charge: [
+             { name: "Heroic Intervention (1CP)", desc: "Core: Charge enemy", type: 'core' },
+             { name: "Fire Overwatch (1CP)", desc: "Core: Hit on 6s", type: 'core' }
+        ],
+        opp_fight: [
+             { name: "Counter-Offensive (2CP)", desc: "Core: Interrupt fight order", type: 'core' }
+        ]
+    };
+
+    // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
+    const STATE_KEY = 'dg_chosen_state_v5';
     
     let gameState = {
-        turn: 0,
-        cp: 0,
-        vp: 0,
-        phaseIdx: -1, // -1 indicates Pre-Game
-        activeId: 'rules',
-        wounds: {} 
+        turn: 0, cp: 0, vp: 0, phaseIdx: -1,
+        activeId: 'rules', wounds: {} 
     };
 
     function saveState() {
@@ -342,12 +408,11 @@
     function loadState() {
         const saved = localStorage.getItem(STATE_KEY);
         if(saved) {
-            try {
-                gameState = JSON.parse(saved);
-            } catch(e) { console.error(e); }
+            try { gameState = JSON.parse(saved); } catch(e) { console.error(e); }
         }
         updateConsole();
         updatePhaseDisplay();
+        updateStratBar();
     }
 
     function resetGame() {
@@ -356,10 +421,11 @@
             saveState();
             loadView('rules');
             updatePhaseDisplay();
+            updateStratBar();
         }
     }
 
-    // --- 3. RENDER LOGIC ---
+    // --- 4. RENDER LOGIC ---
     
     // Side Bar
     const listEl = document.getElementById('unit-list');
@@ -473,7 +539,29 @@
         container.innerHTML = html;
     }
 
-    // --- 4. GAME ENGINE LOGIC ---
+    function updateStratBar() {
+        const bar = document.getElementById('strat-bar');
+        if(gameState.phaseIdx === -1) {
+            bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">Awaiting Deployment...</span>';
+            return;
+        }
+
+        const pId = PHASES[gameState.phaseIdx].id;
+        const strats = STRATAGEMS[pId] || [];
+
+        if(strats.length === 0) {
+            bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">NO ORDERS AVAILABLE</span>';
+            return;
+        }
+
+        let html = '';
+        strats.forEach(s => {
+            html += `<div class="strat-pill ${s.type}" onclick="alert('${s.name}\\n\\n${s.desc}')">${s.name}</div>`;
+        });
+        bar.innerHTML = html;
+    }
+
+    // --- 5. GAME ENGINE LOGIC ---
 
     function modW(key, diff, max) {
         // Init if undefined
@@ -495,8 +583,6 @@
 
         // Check DD
         const baseUid = key.substring(0, key.lastIndexOf('_'));
-        // We need to know count/max to check properly, but simple check:
-        // Just toggle DD warning if THIS model died
         if(v === 0) {
             const ddEl = document.getElementById(`dd_${baseUid}`);
             if(ddEl) ddEl.style.display = 'block';
@@ -572,6 +658,7 @@
         
         saveState();
         updatePhaseDisplay();
+        updateStratBar();
         loadView(gameState.activeId); // Refresh for phase highlights
     };
 
