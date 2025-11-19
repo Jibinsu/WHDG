@@ -15,12 +15,12 @@
             --bg-color: #eaedf0; --surface-color: #ffffff; --text-color: #1c1e21;
             --text-sub: #606770; --header-bg: #2c3e50; --header-text: #ffffff;
             --accent-color: #2980b9; --border-color: #dfe3e8;
-            --console-bg: #1a1a1a; --stat-bg: #f8f9fa; --stat-header: #e9ecef;
+            --console-bg: #1a1a1a; --console-text: #f1f1f1;
+            --stat-bg: #f8f9fa; --stat-header: #e9ecef;
             --highlight-bg: #e8f5e9; --highlight-border: #c8e6c9;
             
             --kw-pos: #2e7d32; --kw-neg: #c62828; --kw-spec: #6a1b9a;
             --strat-dg: #27ae60; --strat-core: #7f8c8d;
-            --warning-bg: #fff3e0; --warning-border: #ffe0b2; --warning-text: #e65100;
         }
 
         body.dark-mode {
@@ -29,7 +29,6 @@
             --accent-color: #27ae60; --border-color: #333333; --console-bg: #000000;
             --stat-bg: #2c2c2c; --stat-header: #3a3a3a;
             --highlight-bg: #1b3a1e; --highlight-border: #2e7d32;
-            --warning-bg: #3e2723; --warning-border: #e65100; --warning-text: #ffcc80;
             
             --kw-pos: #66bb6a; --kw-neg: #ef5350; --kw-spec: #ab47bc;
         }
@@ -71,7 +70,7 @@
             width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font-size: 1.2rem;
         }
 
-        /* --- Layout --- */
+        /* --- Body --- */
         #main-body { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
         
         #unit-list {
@@ -125,9 +124,8 @@
         }
         .reset-btn { font-size: 0.7rem; color: #e74c3c; background: transparent; border: 1px solid #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* --- Cards & Stats --- */
+        /* --- Cards --- */
         .card { background: var(--surface-color); border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .card.battleshock-active { border: 2px solid var(--warning-text); background: var(--warning-bg); }
         
         .tactics-card { background-color: var(--highlight-bg); border: 1px solid var(--highlight-border); color: var(--text-color); }
         .tactics-card h3 { margin-top: 0; color: var(--kw-pos); border-bottom: 1px solid var(--highlight-border); padding-bottom: 5px; margin-bottom: 10px; font-size: 1rem; }
@@ -165,7 +163,6 @@
         
         .status-alert { display: none; font-weight: 900; text-align: center; font-size: 0.85rem; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 5px; border-radius: 4px; }
         .deadly-demise { color: var(--kw-neg); display: block; animation: pulse 2s infinite; }
-        .battleshock { background: var(--warning-text); color: var(--surface-color); display: block; }
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         
@@ -439,76 +436,89 @@
         ]
     };
 
-    // --- 3. STATE & ENGINE ---
-    const STATE_KEY = 'dg_chosen_safe_v7';
+    // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
+    const STATE_KEY = 'dg_chosen_final_v8';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
-        activeId: 'rules', wounds: {}, theme: 'light'
+        activeId: 'rules', wounds: {},
+        theme: 'light'
     };
 
-    function initApp() {
-        // 1. Try Load
-        try {
-            const saved = localStorage.getItem(STATE_KEY);
-            if(saved) {
-                gameState = JSON.parse(saved);
-                console.log("State Loaded");
-            }
-        } catch(e) {
-            console.error("Save corrupted, resetting.", e);
-            resetGame();
+    function saveState() {
+        localStorage.setItem(STATE_KEY, JSON.stringify(gameState));
+        updateConsole();
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(STATE_KEY);
+        if(saved) {
+            try { gameState = JSON.parse(saved); } catch(e) { console.error(e); }
         }
-
-        // 2. Render Side Bar
-        const listEl = document.getElementById('unit-list');
-        listEl.innerHTML = '';
-        let lastGroup = '';
-        TASK_FORCES.forEach(tf => {
-            if(tf.group !== lastGroup) {
-                const grp = document.createElement('div');
-                grp.className = 'group-label';
-                grp.textContent = tf.group;
-                listEl.appendChild(grp);
-                lastGroup = tf.group;
-            }
-            const btn = document.createElement('button');
-            btn.id = `btn_${tf.id}`;
-            btn.className = `unit-btn ${tf.type === 'combo' ? 'combo-btn' : ''} ${tf.id === 'rules' ? 'rules-btn' : ''}`;
-            btn.textContent = tf.name;
-            btn.onclick = () => loadView(tf.id);
-            listEl.appendChild(btn);
-        });
-
-        // 3. Initial Render
-        applyTheme(gameState.theme);
+        applyTheme(gameState.theme || 'light');
         updateConsole();
         updatePhaseDisplay();
         updateStratBar();
-        loadView(gameState.activeId || 'rules');
-        
-        // 4. Wake Lock
-        document.addEventListener('click', requestWakeLock, {once:true});
     }
 
-    // --- 4. RENDER ---
-    function loadView(id) {
-        // Validate ID exists (Crash Prevention)
-        const data = TASK_FORCES.find(t => t.id === id);
-        if(!data) {
-            console.error("Invalid ID:", id);
-            loadView('rules'); 
-            return;
+    function resetGame() {
+        if(confirm("Reset Game? This clears all wounds, CP, and VP.")) {
+            const currentTheme = gameState.theme;
+            gameState = { turn: 0, cp: 0, vp: 0, phaseIdx: -1, activeId: 'rules', wounds: {}, theme: currentTheme };
+            saveState();
+            loadView('rules');
+            updatePhaseDisplay();
+            updateStratBar();
         }
+    }
 
+    function toggleTheme() {
+        gameState.theme = gameState.theme === 'light' ? 'dark' : 'light';
+        applyTheme(gameState.theme);
+        saveState();
+    }
+
+    function applyTheme(theme) {
+        const btn = document.getElementById('theme-toggle');
+        if(theme === 'dark') {
+            document.body.classList.add('dark-mode');
+            btn.innerText = '☀';
+        } else {
+            document.body.classList.remove('dark-mode');
+            btn.innerText = '◐';
+        }
+    }
+
+    // --- 4. RENDER LOGIC ---
+    
+    // Side Bar
+    const listEl = document.getElementById('unit-list');
+    let lastGroup = '';
+    TASK_FORCES.forEach(tf => {
+        if(tf.group !== lastGroup) {
+            const grp = document.createElement('div');
+            grp.className = 'group-label';
+            grp.textContent = tf.group;
+            listEl.appendChild(grp);
+            lastGroup = tf.group;
+        }
+        const btn = document.createElement('button');
+        btn.id = `btn_${tf.id}`;
+        btn.className = `unit-btn ${tf.type === 'combo' ? 'combo-btn' : ''} ${tf.id === 'rules' ? 'rules-btn' : ''}`;
+        btn.textContent = tf.name;
+        btn.onclick = () => loadView(tf.id);
+        listEl.appendChild(btn);
+    });
+
+    function loadView(id) {
         gameState.activeId = id;
         saveState();
         
-        // UI Updates
         document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById(`btn_${id}`);
         if(activeBtn) activeBtn.classList.add('active');
 
+        const data = TASK_FORCES.find(t => t.id === id);
         const container = document.getElementById('content-scroll');
         
         if(data.type === 'rules') {
@@ -526,8 +536,6 @@
         
         unitList.forEach((u, idx) => {
             const prof = PROFILES[u.profile];
-            if(!prof) { console.error("Missing Profile:", u.profile); return; } // Safety check
-
             const uid = `${id}_${idx}`; 
             
             html += `<div class="split-col"><div class="card" id="card_${uid}">`;
@@ -536,7 +544,6 @@
                 <div class="unit-role">${u.label}</div>
             </div>`;
 
-            // Stats
             html += `<div class="stats-row">
                 <div class="stat-box"><span class="stat-label">M</span><div class="stat-val">${prof.stats.M}</div></div>
                 <div class="stat-box"><span class="stat-label">T</span><div class="stat-val">${prof.stats.T}</div></div>
@@ -547,7 +554,6 @@
                 <div class="stat-box invuln-box"><span class="stat-label">INV</span><div class="stat-val">${prof.stats.invuln}</div></div>
             </div>`;
 
-            // Wounds
             html += `<div>`;
             const maxW = parseInt(prof.stats.W);
             for(let i=0; i<u.count; i++) {
@@ -564,102 +570,34 @@
                 </div>`;
             }
             
-            // Alerts
+            // Visual Alerts Placeholder
             html += `<div class="status-alert deadly-demise" id="dd_${uid}">⚠️ DEADLY DEMISE CHECK</div>`;
-            html += `<div class="status-alert battleshock" id="bs_${uid}">⚠️ BATTLE-SHOCK TEST<br>(Below Half Strength)</div>`;
+            
             html += `</div>`;
 
-            // Weapons
             html += `<div style="margin-top:15px;">`;
-            if(prof.wargear) {
-                prof.wargear.forEach(w => {
-                    html += `<div class="weapon-row">
-                        <div class="weapon-header"><div class="weapon-name">${w.name}</div></div>
-                        <table class="profile-table">
-                            <thead><tr><th>RNG</th><th>A</th><th>HIT</th><th>S</th><th>AP</th><th>D</th></tr></thead>
-                            <tbody><tr><td>${w.stats.range}</td><td>${w.stats.a}</td><td>${w.stats.bs||w.stats.ws}</td><td>${w.stats.s}</td><td>${w.stats.ap}</td><td>${w.stats.d}</td></tr></tbody>
-                        </table>
-                        <div style="font-size:0.7rem; margin-top:2px;">${formatKw(w.kw)}</div>
-                    </div>`;
-                });
-            }
+            prof.wargear.forEach(w => {
+                html += `<div class="weapon-row">
+                    <div class="weapon-header"><div class="weapon-name">${w.name}</div></div>
+                    <table class="profile-table">
+                        <thead><tr><th>RNG</th><th>A</th><th>HIT</th><th>S</th><th>AP</th><th>D</th></tr></thead>
+                        <tbody><tr><td>${w.stats.range}</td><td>${w.stats.a}</td><td>${w.stats.bs||w.stats.ws}</td><td>${w.stats.s}</td><td>${w.stats.ap}</td><td>${w.stats.d}</td></tr></tbody>
+                    </table>
+                    <div style="font-size:0.7rem; margin-top:2px;">${formatKw(w.kw)}</div>
+                </div>`;
+            });
             
-            // Abilities
-            if(prof.abilities) {
-                prof.abilities.forEach(a => {
-                    const pId = (gameState.phaseIdx >= 0) ? PHASES[gameState.phaseIdx].id : '';
-                    const active = a.phases.includes(pId) || a.phases.includes('any');
-                    html += `<div class="ability ${active?'active-phase':''} ${a.name.includes('ENHANCEMENT')?'enhancement':''}">
-                        <div class="ability-name">${a.name}</div><div class="ability-desc">${a.desc}</div>
-                    </div>`;
-                });
-            }
+            prof.abilities.forEach(a => {
+                const pId = (gameState.phaseIdx >= 0) ? PHASES[gameState.phaseIdx].id : '';
+                const active = a.phases.includes(pId) || a.phases.includes('any');
+                html += `<div class="ability ${active?'active-phase':''} ${a.name.includes('ENHANCEMENT')?'enhancement':''}">
+                    <div class="ability-name">${a.name}</div><div class="ability-desc">${a.desc}</div>
+                </div>`;
+            });
             html += `</div></div></div>`;
         });
         html += `</div>`;
         container.innerHTML = html;
-
-        // Status Checks post-render
-        unitList.forEach((u, idx) => {
-             const uid = `${id}_${idx}`;
-             if(PROFILES[u.profile]) {
-                 checkUnitStatus(uid, u.count, parseInt(PROFILES[u.profile].stats.W));
-             }
-        });
-    }
-
-    // --- 5. LOGIC & UTILS ---
-    
-    function saveState() {
-        localStorage.setItem(STATE_KEY, JSON.stringify(gameState));
-        updateConsole();
-    }
-
-    function modW(key, diff, max, uid, count) {
-        if(gameState.wounds[key] === undefined) gameState.wounds[key] = max;
-        let v = gameState.wounds[key] + diff;
-        if(v < 0) v = 0; if(v > max) v = max;
-        gameState.wounds[key] = v;
-        saveState();
-        
-        const el = document.getElementById(`val_${key}`);
-        if(el) {
-            el.innerText = v;
-            el.style.color = (v === 0) ? 'var(--kw-neg)' : 'inherit';
-        }
-        
-        // Trigger Deadly Demise visual only on death (downward)
-        const baseUid = key.substring(0, key.lastIndexOf('_'));
-        const ddEl = document.getElementById(`dd_${baseUid}`);
-        if(ddEl && v === 0 && diff < 0) {
-            ddEl.style.display = 'block';
-            setTimeout(() => { ddEl.style.display = 'none'; }, 4000);
-        }
-
-        checkUnitStatus(uid, count, max);
-    }
-
-    function checkUnitStatus(uid, startCount, maxW) {
-        let deadModels = 0;
-        for(let i=0; i<startCount; i++) {
-            const k = `${uid}_${i}`;
-            const w = (gameState.wounds[k] !== undefined) ? gameState.wounds[k] : maxW;
-            if(w === 0) deadModels++;
-        }
-        
-        const currentModels = startCount - deadModels;
-        const bsEl = document.getElementById(`bs_${uid}`);
-        const cardEl = document.getElementById(`card_${uid}`);
-        
-        if(bsEl && cardEl) {
-            if(currentModels < startCount/2) {
-                bsEl.style.display = 'block';
-                cardEl.classList.add('battleshock-active');
-            } else {
-                bsEl.style.display = 'none';
-                cardEl.classList.remove('battleshock-active');
-            }
-        }
     }
 
     function updateStratBar() {
@@ -668,9 +606,10 @@
             bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">Awaiting Deployment...</span>';
             return;
         }
-        
+
         const pId = PHASES[gameState.phaseIdx].id;
-        const strats = STRATAGEMS[pId] || [];
+        let key = pId; 
+        const strats = STRATAGEMS[key] || [];
 
         if(strats.length === 0) {
             bar.innerHTML = '<span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">NO STRATAGEMS AVAILABLE</span>';
@@ -679,16 +618,41 @@
 
         let html = '';
         strats.forEach((s, index) => {
-            html += `<div class="strat-pill ${s.type}" onclick="openStrat('${pId}', ${index})">${s.name}</div>`;
+            html += `<div class="strat-pill ${s.type}" onclick="openStrat('${key}', ${index})">${s.name}</div>`;
         });
         bar.innerHTML = html;
     }
+    
+    function openStrat(phaseKey, index) {
+        const s = STRATAGEMS[phaseKey][index];
+        alert(`${s.name}\n\n${s.desc.replace(/<br>/g, "\n").replace(/<strong>/g, "").replace(/<\/strong>/g, "")}`);
+    }
 
-    function openStrat(pId, idx) {
-        const s = STRATAGEMS[pId][idx];
-        // Clean HTML tags for alert box
-        const cleanDesc = s.desc.replace(/<br>/g, "\n").replace(/<strong>/g, "").replace(/<\/strong>/g, "");
-        alert(`${s.name}\n\n${cleanDesc}`);
+    // --- 5. GAME ENGINE LOGIC ---
+
+    function modW(key, diff, max, uid, count) {
+        if(gameState.wounds[key] === undefined) gameState.wounds[key] = max;
+        
+        let v = gameState.wounds[key] + diff;
+        if(v < 0) v = 0;
+        if(v > max) v = max;
+        
+        gameState.wounds[key] = v;
+        saveState();
+        
+        const el = document.getElementById(`val_${key}`);
+        if(el) {
+            el.innerText = v;
+            el.style.color = (v === 0) ? 'var(--kw-neg)' : 'inherit';
+        }
+
+        // Deadly Demise
+        const baseUid = key.substring(0, key.lastIndexOf('_'));
+        const ddEl = document.getElementById(`dd_${baseUid}`);
+        if(ddEl && v === 0 && diff < 0) {
+            ddEl.style.display = 'block';
+            setTimeout(() => { ddEl.style.display = 'none'; }, 4000);
+        }
     }
 
     function modRes(type, diff) {
@@ -753,34 +717,6 @@
         loadView(gameState.activeId); 
     };
 
-    function resetGame() {
-        if(confirm("Reset Game? This clears all wounds, CP, and VP.")) {
-            const currentTheme = gameState.theme;
-            gameState = { turn: 0, cp: 0, vp: 0, phaseIdx: -1, activeId: 'rules', wounds: {}, theme: currentTheme };
-            saveState();
-            loadView('rules');
-            updatePhaseDisplay();
-            updateStratBar();
-        }
-    }
-
-    function toggleTheme() {
-        gameState.theme = gameState.theme === 'light' ? 'dark' : 'light';
-        applyTheme(gameState.theme);
-        saveState();
-    }
-
-    function applyTheme(theme) {
-        const btn = document.getElementById('theme-toggle');
-        if(theme === 'dark') {
-            document.body.classList.add('dark-mode');
-            btn.innerText = '☀';
-        } else {
-            document.body.classList.remove('dark-mode');
-            btn.innerText = '◐';
-        }
-    }
-
     function formatKw(str) {
         if(!str) return '';
         return str.split(', ').map(k => {
@@ -795,8 +731,8 @@
         try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch (err) {}
     }
 
-    // Boot
-    initApp();
+    loadState();
+    if(gameState.activeId) loadView(gameState.activeId);
 
 </script>
 </body>
