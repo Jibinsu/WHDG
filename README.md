@@ -1,63 +1,54 @@
-🎲 40k Datasheet Assistant 🎲
-A slick, single-page web application designed to help Warhammer 40,000 players keep track of their unit datasheets during a game. Say goodbye to flipping through codexes and hello to at-a-glance battlefield clarity!
+# 🎲 40k Command Bunker: The Chosen Edition
 
-A tool forged in the heat of battle to solve a simple problem: remembering all your rules! 💥
-This project started as a personal tool to keep track of complex character abilities and has evolved into a full-featured game assistant with a focus on readability and in-game usability.
+A tournament-grade, single-page web application designed to give **Death Guard** players an unfair advantage in battlefield clarity. This tool eliminates cognitive load, tracks game state, and ensures you never forget a rule, stratagem, or aura range again.
 
 
-🌟 Features
-Interactive Datasheet Viewer 📄: A clean, two-column layout separating stats/weapons from abilities.
 
-Dyslexia-Friendly UI 👓: Built with a high-contrast, off-white theme and the legible Verdana font to maximize readability for everyone.
+> *"Forged in the heat of battle to solve a simple problem: remembering all your rules."*
 
-Game Phase Tracker 🕒: Click through the phases of your turn and your opponent's turn. The app knows what phase you're in!
+## ⚡ New in v2.0 (Tournament Ready)
 
-Contextual Ability Highlighting ✨: Abilities automatically glow with a golden highlight when they are relevant in the current game phase. Auras get a subtle blue highlight.
+The app has been overhauled with features specifically requested for competitive play:
 
-Multi-Model Wound Counter ❤️‍🩹: Track wounds for up to 20 models in a unit individually.
+* **🚨 State Persistence:** Close the app, refresh the page, or let your battery die—your wound counts, CP, VP, and current phase are saved instantly to your device's memory. You never lose game data.
+* **💡 No-Sleep Mode:** Uses the browser's `Wake Lock API` to prevent your screen from dimming or locking during a game.
+* **🧠 Context-Aware Stratagems:** A dynamic bar that automatically displays **only** the Stratagems usable in the current phase (with full rules text).
+* **⚠️ Math-Checking:** Automatically warns you when a unit falls Below Half-Strength (Battleshock risk) or when a model with *Deadly Demise* is destroyed.
+* **🌗 Dark Mode:** Instantly toggle between high-contrast Light Mode and battery-saving Dark Mode.
 
-Deadly Demise Alert 💥: When a model with Deadly Demise hits 0 wounds, its tracker flashes red, providing an unmissable reminder to roll for the explosion.
+## 🌟 Core Features
 
-Detailed & Colour-Coded Info 🎨: All weapon stats and special rules are colour-coded for instant recognition.
+* **Tactical Task Forces:** Units are grouped into logical battlefield roles (e.g., "Executioner Block," "Artillery Spotter") rather than just a list of names.
+* **Synergy Reminders:** Yellow "Tactics Cards" explain *exactly* how your character buffs interact with their bodyguards (e.g., how *Vector of Disease* math works on T12 targets).
+* **Game Phase Tracker 🕒:** Tracks whose turn it is and what phase it is.
+* **Dynamic Aura Ranges:** The top bar automatically updates your **Contagion Range** (3", 6", or 9") based on the current Turn number.
+* **Command Console:** A sticky footer to track Command Points (CP) and Victory Points (VP), with auto-incrementing CP in Command Phases.
+* **Multi-Model Wound Counter ❤️‍🩹:** Track wounds for complex multi-model units (like Terminators) individually.
 
-🚀 How to Use
-This is a zero-installation, single-file application.
+## 🚀 Installation (iPad / Mobile)
 
-Download: Clone this repository or just download the index.html file.
+This app is designed to behave like a **native iOS/Android app**.
 
-Open: Open the index.html file in any modern web browser (Chrome, Firefox, Edge, etc.).
+1.  **Host or Open:** Open the `index.html` file in Safari (iOS) or Chrome (Android).
+2.  **Add to Home Screen:** Tap the "Share" button and select "Add to Home Screen."
+3.  **Launch:** Open the icon from your home screen. It will launch in **Full Screen Mode** (no address bar, no browser buttons) for a totally immersive experience.
 
-Play!:
+## 🛠️ Technology Stack
 
-Click "Start Turn 1" to begin the game tracker.
+Built with pure, bulletproof web technologies. No frameworks, no build steps, no lag.
 
-Select a unit from the list on the left.
+* **HTML5** (Offline capable)
+* **CSS3** (Modern Variables, Flexbox, Dark Mode support)
+* **Vanilla JavaScript** (ES6, LocalStorage API, Wake Lock API)
 
-Use the "Model Count" dropdown to set how many models are in the unit.
+## 🎮 How to Use
 
-Track damage with the - and + buttons for each model.
+1.  **Start Game:** Click the button in the top right. The app initializes Turn 1 and sets your Contagion Range to 3".
+2.  **Select a Unit:** Tap a unit group on the left (e.g., "Executioner Block").
+3.  **Track Wounds:** Use the `-` and `+` buttons. If a model dies, the text turns red. If the unit is below half-strength, a warning appears.
+4.  **Check Stratagems:** Look at the bar above the console. It shows exactly what you can spend CP on *right now*.
+5.  **Next Phase:** Click "Next Phase" to advance the game state. The app automatically handles CP generation.
 
-Click "Next Phase" to advance the game state and see relevant abilities light up!
+## ⚖️ Disclaimer
 
-🛠️ Technology Stack
-This project is built with pure, fundamental web technologies. No frameworks, no libraries, no fuss.
-
-HTML5
-
-CSS3 (with modern features like Flexbox and CSS Variables)
-
-Vanilla JavaScript (ES6)
-
-🔮 Future Development
-This tool is great, but it could be even better! Potential future features include:
-
-Adding More Factions 👾: A system to load different codex data from separate JSON files.
-
-Saving Army Lists 💾: The ability to create and save a list for a specific game.
-
-Improved Reminders 💡: Using pop-up modals instead of the basic browser alert() for a cleaner UI.
-
-Responsive Design 📱: A mobile-friendly layout for use on phones and smaller tablets.
-
-⚖️ Important Disclaimer
-This is a personal project and a coding exercise. All Warhammer 40,000 unit names, stats, and abilities are the intellectual property of Games Workshop. This tool is intended for personal, non-commercial use by individuals who own the official codexes. Please support the official products.
+This is a personal project and a coding exercise. All Warhammer 40,000 unit names, stats, abilities, and Stratagems are the intellectual property of **Games Workshop**. This tool is intended for personal use by individuals who own the official codexes. **Please support the official products.**
