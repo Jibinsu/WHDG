@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Chosen: Command Bunker </title>
+    <title>The Chosen: Command Bunker</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -53,7 +53,6 @@
         .turn-label { font-size: 0.65rem; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; }
         #current-phase-name { font-size: 1.1rem; font-weight: 900; text-transform: uppercase; }
         
-        /* New Contagion Badge */
         #contagion-badge {
             background: var(--kw-pos); color: #fff; font-size: 0.7rem; padding: 2px 6px;
             border-radius: 4px; margin-left: 8px; vertical-align: middle; display: none;
@@ -72,8 +71,9 @@
             width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font-size: 1.2rem;
         }
 
-        /* --- Sidebar --- */
+        /* --- Body --- */
         #main-body { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
+        
         #unit-list {
             width: 260px; flex-shrink: 0; background-color: var(--stat-bg); 
             border-right: 1px solid var(--border-color); overflow-y: auto; padding: 10px; padding-bottom: 130px;
@@ -89,11 +89,6 @@
         .unit-btn.rules-btn { border-left: 5px solid var(--highlight-border); }
         .unit-btn.combo-btn { border-left: 5px solid var(--accent-color); }
         
-        /* Unit status indicators in sidebar */
-        .unit-btn.status-dead { opacity: 0.6; text-decoration: line-through; }
-        .unit-btn.status-shocked { border-right: 5px solid var(--warning-text); }
-
-        /* --- Content --- */
         #unit-details-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-color); }
         #content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 130px; display: flex; flex-direction: column; gap: 15px; }
 
@@ -130,15 +125,10 @@
         }
         .reset-btn { font-size: 0.7rem; color: #e74c3c; background: transparent; border: 1px solid #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* --- Cards --- */
+        /* --- Cards & Stats --- */
         .card { background: var(--surface-color); border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .card.battleshock-active { border: 2px solid var(--warning-text); background: var(--warning-bg); }
         
-        /* Battle-shock Warning Card Style */
-        .card.battleshock-active {
-            border: 2px solid var(--warning-text);
-            background: var(--warning-bg);
-        }
-
         .tactics-card { background-color: var(--highlight-bg); border: 1px solid var(--highlight-border); color: var(--text-color); }
         .tactics-card h3 { margin-top: 0; color: var(--kw-pos); border-bottom: 1px solid var(--highlight-border); padding-bottom: 5px; margin-bottom: 10px; font-size: 1rem; }
         .tactics-detail { font-size: 0.9rem; line-height: 1.5; }
@@ -172,17 +162,10 @@
         
         .active-phase { border-color: var(--highlight-border); background: var(--highlight-bg); }
         .enhancement { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
-        
-        /* Alerts */
-        .status-alert { display: none; font-weight: 900; text-align: center; font-size: 0.85rem; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 5px; border-radius: 4px; }
-        .deadly-demise { color: var(--kw-neg); display: block; animation: pulse 2s infinite; }
-        .battleshock { background: var(--warning-text); color: var(--surface-color); display: block; }
+        .deadly-demise { color: var(--kw-neg); font-weight: 900; display: none; text-align: center; font-size: 0.85rem; margin-top: 8px; animation: pulse 1s infinite; text-transform: uppercase; letter-spacing: 1px; }
+        .battleshock { display: none; text-align: center; font-size: 0.8rem; color: var(--warning-text); font-weight: 800; margin-top: 5px; }
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        .k-lethal, .k-sus { color: var(--kw-pos); font-weight: 700; } 
-        .k-anti, .k-dev { color: var(--kw-neg); font-weight: 700; } 
-        .k-blast { color: var(--kw-spec); font-weight: 700; }
     </style>
 </head>
 <body class="">
@@ -239,98 +222,98 @@
 </div>
 
 <script>
-    // --- 1. GAME DATA (THE CHOSEN) ---
+    // --- 1. GAME DATA ---
     const PROFILES = {
         loc: {
-            name: "Lord of Contagion",
+            name: `Lord of Contagion`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
-                { name: 'Manreaper (Strike)', type: 'Melee', stats: { range: 'Melee', a: '5', ws: '2+', s: '9', ap: '-2', d: '3' }, kw: 'LETHAL HITS' },
-                { name: 'Manreaper (Sweep)', type: 'Melee', stats: { range: 'Melee', a: '10', ws: '2+', s: '6', ap: '-1', d: '1' }, kw: 'LETHAL HITS' }
+                { name: `Manreaper (Strike)`, type: `Melee`, stats: { range: `Melee`, a: `5`, ws: `2+`, s: `9`, ap: `-2`, d: `3` }, kw: `LETHAL HITS` },
+                { name: `Manreaper (Sweep)`, type: `Melee`, stats: { range: `Melee`, a: `10`, ws: `2+`, s: `6`, ap: `-1`, d: `1` }, kw: `LETHAL HITS` }
             ],
             abilities: [
-                { name: 'Vector of Disease', desc: 'While this model is leading a unit, melee weapons equipped by models in that unit have the <strong>[SUSTAINED HITS 1]</strong> and <strong>[LANCE]</strong> abilities.', phases: ['fight'] },
-                { name: 'Unholy Resilience', desc: 'The first time this model is destroyed, roll one D6 at the end of the phase. On a 2+, set this model back up on the battlefield, as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with 3 wounds remaining.', phases: ['any'] },
-                { name: 'ENHANCEMENT: Warprot Talisman', desc: 'Once per battle, at the end of your opponent’s turn, if the bearer’s unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.', phases: ['opponent_end'] }
+                { name: `Vector of Disease`, desc: `While this model is leading a unit, melee weapons equipped by models in that unit have the <strong>[SUSTAINED HITS 1]</strong> and <strong>[LANCE]</strong> abilities.`, phases: [`fight`] },
+                { name: `Unholy Resilience`, desc: `The first time this model is destroyed, roll one D6 at the end of the phase. On a 2+, set this model back up on the battlefield, as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with 3 wounds remaining.`, phases: [`any`] },
+                { name: `ENHANCEMENT: Warprot Talisman`, desc: `Once per battle, at the end of your opponent’s turn, if the bearer’s unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.`, phases: [`opponent_end`] }
             ]
         },
         lov: {
-            name: "Lord of Virulence",
+            name: `Lord of Virulence`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
-                { name: 'Twin Plague Spewer', type: 'Ranged', stats: { range: '12"', a: 'D6', bs: 'N/A', s: '5', ap: '-1', d: '1' }, kw: 'ANTI-INF 2+, IGNORES COVER, TORRENT, TWIN-LINKED' },
-                { name: 'Power Fist', type: 'Melee', stats: { range: 'Melee', a: '5', ws: '2+', s: '8', ap: '-2', d: '2' }, kw: 'LETHAL HITS' }
+                { name: `Twin Plague Spewer`, type: `Ranged`, stats: { range: `12"`, a: `D6`, bs: `N/A`, s: `5`, ap: `-1`, d: `1` }, kw: `ANTI-INF 2+, IGNORES COVER, TORRENT, TWIN-LINKED` },
+                { name: `Power Fist`, type: `Melee`, stats: { range: `Melee`, a: `5`, ws: `2+`, s: `8`, ap: `-2`, d: `2` }, kw: `LETHAL HITS` }
             ],
             abilities: [
-                { name: 'Virulent Aura', desc: 'While this model is leading a unit, each time a model in that unit makes a ranged attack, you can re-roll the Wound roll.', phases: ['shooting', 'opp_shooting'] },
-                { name: 'Blight Bombardment', desc: 'At the start of your Shooting phase, select one enemy unit within 30" of and visible to this model. Until the end of the phase, friendly DEATH GUARD Blast weapons re-roll the Hit roll. Other friendly DEATH GUARD weapons re-roll a Hit roll of 1.', phases: ['shooting'] },
-                { name: 'ENHANCEMENT: Helm of Fly King', desc: 'While the bearer is leading a unit, models in that unit cannot be targeted by ranged attacks unless the attacking model is within 18".', phases: ['opp_shooting'] }
+                { name: `Virulent Aura`, desc: `While this model is leading a unit, each time a model in that unit makes a ranged attack, you can re-roll the Wound roll.`, phases: [`shooting`, `opp_shooting`] },
+                { name: `Blight Bombardment`, desc: `At the start of your Shooting phase, select one enemy unit within 30" of and visible to this model. Until the end of the phase, friendly DEATH GUARD Blast weapons re-roll the Hit roll. Other friendly DEATH GUARD weapons re-roll a Hit roll of 1.`, phases: [`shooting`] },
+                { name: `ENHANCEMENT: Helm of Fly King`, desc: `While the bearer is leading a unit, models in that unit cannot be targeted by ranged attacks unless the attacking model is within 18".`, phases: [`opp_shooting`] }
             ]
         },
         typhus: {
-            name: "Typhus",
+            name: `Typhus`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
-                { name: 'Lakrimae (Strike)', type: 'Melee', stats: { range: 'Melee', a: '6', ws: '2+', s: '9', ap: '-2', d: '3' }, kw: 'LETHAL HITS' },
-                { name: 'Lakrimae (Sweep)', type: 'Melee', stats: { range: 'Melee', a: '12', ws: '2+', s: '6', ap: '-1', d: '1' }, kw: 'LETHAL HITS' }
+                { name: `Lakrimae (Strike)`, type: `Melee`, stats: { range: `Melee`, a: `6`, ws: `2+`, s: `9`, ap: `-2`, d: `3` }, kw: `LETHAL HITS` },
+                { name: `Lakrimae (Sweep)`, type: `Melee`, stats: { range: `Melee`, a: `12`, ws: `2+`, s: `6`, ap: `-1`, d: `1` }, kw: `LETHAL HITS` }
             ],
             abilities: [
-                { name: 'Destroyer Hive', desc: 'While this model is leading a unit, each time a melee attack targets that unit, subtract 1 from the Hit roll.', phases: ['fight', 'opp_fight'] },
-                { name: 'Eater Plague (Psychic)', desc: 'In your Shooting phase, select one enemy unit within 18" of and visible to this PSYKER. Roll one D6: <br>1: This PSYKER’s unit suffers D3 mortal wounds.<br>2-5: That enemy unit suffers D6 mortal wounds.<br>6: That enemy unit suffers D3+3 mortal wounds.', phases: ['shooting'] }
+                { name: `Destroyer Hive`, desc: `While this model is leading a unit, each time a melee attack targets that unit, subtract 1 from the Hit roll.`, phases: [`fight`, `opp_fight`] },
+                { name: `Eater Plague (Psychic)`, desc: `In your Shooting phase, select one enemy unit within 18" of and visible to this PSYKER. Roll one D6: <br>1: This PSYKER’s unit suffers D3 mortal wounds.<br>2-5: That enemy unit suffers D6 mortal wounds.<br>6: That enemy unit suffers D3+3 mortal wounds.`, phases: [`shooting`] }
             ]
         },
         deathshroud: {
-            name: "Deathshroud Terms",
+            name: `Deathshroud Terms`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
-                { name: 'Plaguespurt Gauntlet', type: 'Ranged', stats: { range: '12"', a: 'D6', bs: 'N/A', s: '3', ap: '0', d: '1' }, kw: 'ANTI-INF 4+, IGNORES COVER, PISTOL, TORRENT' },
-                { name: 'Manreaper (Strike)', type: 'Melee', stats: { range: 'Melee', a: '4', ws: '2+', s: '8', ap: '-2', d: '2' }, kw: 'LETHAL HITS' },
-                { name: 'Manreaper (Sweep)', type: 'Melee', stats: { range: 'Melee', a: '8', ws: '3+', s: '4', ap: '-1', d: '1' }, kw: 'LETHAL HITS' }
+                { name: `Plaguespurt Gauntlet`, type: `Ranged`, stats: { range: `12"`, a: `D6`, bs: `N/A`, s: `3`, ap: `0`, d: `1` }, kw: `ANTI-INF 4+, IGNORES COVER, PISTOL, TORRENT` },
+                { name: `Manreaper (Strike)`, type: `Melee`, stats: { range: `Melee`, a: `4`, ws: `2+`, s: `8`, ap: `-2`, d: `2` }, kw: `LETHAL HITS` },
+                { name: `Manreaper (Sweep)`, type: `Melee`, stats: { range: `Melee`, a: `8`, ws: `3+`, s: `4`, ap: `-1`, d: `1` }, kw: `LETHAL HITS` }
             ],
             abilities: [
-                { name: 'Silent Bodyguard', desc: 'While a CHARACTER model is leading this unit, that CHARACTER model has the Feel No Pain 4+ ability.', phases: ['any'] },
-                { name: 'Death Approaches', desc: 'In your Movement phase, when this unit is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 6" horizontally away from all Afflicted enemy units.', phases: ['movement'] },
-                { name: 'Icon of Despair', desc: 'While an enemy unit is within 6" of the bearer, worsen the Leadership characteristic of models in that unit by 1.', phases: ['aura'] }
+                { name: `Silent Bodyguard`, desc: `While a CHARACTER model is leading this unit, that CHARACTER model has the Feel No Pain 4+ ability.`, phases: [`any`] },
+                { name: `Death Approaches`, desc: `In your Movement phase, when this unit is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 6" horizontally away from all Afflicted enemy units.`, phases: [`movement`] },
+                { name: `Icon of Despair`, desc: `While an enemy unit is within 6" of the bearer, worsen the Leadership characteristic of models in that unit by 1.`, phases: [`aura`] }
             ]
         },
         poxwalkers: {
-            name: "Poxwalkers",
+            name: `Poxwalkers`,
             stats: { M: '4"', T: '4', Sv: '7+', W: '1', Ld: '8+', OC: '1', invuln: '6+' },
-            wargear: [ { name: 'Improvised Weapon', type: 'Melee', stats: { range: 'Melee', a: '2', ws: '5+', s: '3', ap: '0', d: '1' }, kw: 'LETHAL HITS' } ],
+            wargear: [ { name: `Improvised Weapon`, type: `Melee`, stats: { range: `Melee`, a: `2`, ws: `5+`, s: `3`, ap: `0`, d: `1` }, kw: `LETHAL HITS` } ],
             abilities: [
-                { name: 'Curse of the Walking Pox', desc: 'Each time a POXWALKER model in this unit makes an attack that destroys an enemy model (excluding MONSTER and VEHICLE models), after this unit has resolved its attacks, you can return one destroyed POXWALKER model to this unit. (Typhus kills count).', phases: ['fight'] },
-                { name: 'Feel No Pain 5+', desc: 'Core ability.', phases: ['any'] }
+                { name: `Curse of the Walking Pox`, desc: `Each time a POXWALKER model in this unit makes an attack that destroys an enemy model (excluding MONSTER and VEHICLE models), after this unit has resolved its attacks, you can return one destroyed POXWALKER model to this unit. (Typhus kills count).`, phases: [`fight`] },
+                { name: `Feel No Pain 5+`, desc: `Core ability.`, phases: [`any`] }
             ]
         },
         blightlords: {
-            name: "Blightlord Terms",
+            name: `Blightlord Terms`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
-                { name: 'Blight Launcher', type: 'Ranged', stats: { range: '24"', a: 'D3', bs: '3+', s: '6', ap: '-1', d: '2' }, kw: 'BLAST, LETHAL HITS' },
-                { name: 'Reaper Autocannon', type: 'Ranged', stats: { range: '36"', a: '4', bs: '3+', s: '7', ap: '-1', d: '1' }, kw: 'DEV WOUNDS, SUSTAINED 1' },
-                { name: 'Combi-bolter', type: 'Ranged', stats: { range: '24"', a: '2', bs: '3+', s: '4', ap: '0', d: '1' }, kw: 'LETHAL, RAPID FIRE 2' }
+                { name: `Blight Launcher`, type: `Ranged`, stats: { range: `24"`, a: `D3`, bs: `3+`, s: `6`, ap: `-1`, d: `2` }, kw: `BLAST, LETHAL HITS` },
+                { name: `Reaper Autocannon`, type: `Ranged`, stats: { range: `36"`, a: `4`, bs: `3+`, s: `7`, ap: `-1`, d: `1` }, kw: `DEV WOUNDS, SUSTAINED 1` },
+                { name: `Combi-bolter`, type: `Ranged`, stats: { range: `24"`, a: `2`, bs: `3+`, s: `4`, ap: `0`, d: `1` }, kw: `LETHAL, RAPID FIRE 2` }
             ],
             abilities: [
-                { name: 'Blistering Fusillade', desc: 'If this unit has a Starting Strength of 5 or more, or if a CHARACTER is leading this unit, then each time a model in this unit makes a ranged attack that targets an Afflicted unit, improve the Strength and Armour Penetration characteristics of that attack by 1.', phases: ['shooting', 'opp_shooting'] }
+                { name: `Blistering Fusillade`, desc: `If this unit has a Starting Strength of 5 or more, or if a CHARACTER is leading this unit, then each time a model in this unit makes a ranged attack that targets an Afflicted unit, improve the Strength and Armour Penetration characteristics of that attack by 1.`, phases: [`shooting`, `opp_shooting`] }
             ]
         },
         spawn: {
-            name: "Chaos Spawn",
+            name: `Chaos Spawn`,
             stats: { M: '8"', T: '5', Sv: '4+', W: '4', Ld: '7+', OC: '1', invuln: '5+' },
-            wargear: [ { name: 'Hideous Mutations', type: 'Melee', stats: { range: 'Melee', a: 'D6+2', ws: '4+', s: '5', ap: '-1', d: '2' }, kw: '' } ],
-            abilities: [ { name: 'Lethal Ichor', desc: 'Each time a melee attack is allocated to a model in this unit, after the attacking unit has finished making its attacks, roll one D6 (to a maximum of six D6 per attacking unit): for each 4+, the attacking unit suffers 1 mortal wound.', phases: ['fight', 'opp_fight'] }, { name: 'FNP 5+', desc: '', phases: ['any'] } ]
+            wargear: [ { name: `Hideous Mutations`, type: `Melee`, stats: { range: `Melee`, a: `D6+2`, ws: `4+`, s: `5`, ap: `-1`, d: `2` }, kw: `` } ],
+            abilities: [ { name: `Lethal Ichor`, desc: `Each time a melee attack is allocated to a model in this unit, after the attacking unit has finished making its attacks, roll one D6 (to a maximum of six D6 per attacking unit): for each 4+, the attacking unit suffers 1 mortal wound.`, phases: [`fight`, `opp_fight`] }, { name: `FNP 5+`, desc: ``, phases: [`any`] } ]
         },
         drone: {
-            name: "Foetid Bloat-drone",
+            name: `Foetid Bloat-drone`,
             stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' },
-            wargear: [ { name: 'Heavy Blight Launcher', type: 'Ranged', stats: { range: '36"', a: 'D6+2', bs: '3+', s: '10', ap: '-2', d: '3' }, kw: 'BLAST, LETHAL HITS' } ],
-            abilities: [ { name: 'Explosive Blight', desc: 'In your Shooting phase, each time this model makes an attack that destroys an enemy unit, before removing the last model in that unit from play, roll a D6, adding 1 to the result if that unit is Afflicted: on a 5+, each enemy unit within 6" of that model is Afflicted until the start of your next turn.', phases: ['shooting'] }, { name: 'Deadly Demise D3', desc: '', phases: ['any'] } ]
+            wargear: [ { name: `Heavy Blight Launcher`, type: `Ranged`, stats: { range: `36"`, a: `D6+2`, bs: `3+`, s: `10`, ap: `-2`, d: `3` }, kw: `BLAST, LETHAL HITS` } ],
+            abilities: [ { name: `Explosive Blight`, desc: `In your Shooting phase, each time this model makes an attack that destroys an enemy unit, before removing the last model in that unit from play, roll a D6, adding 1 to the result if that unit is Afflicted: on a 5+, each enemy unit within 6" of that model is Afflicted until the start of your next turn.`, phases: [`shooting`] }, { name: `Deadly Demise D3`, desc: ``, phases: [`any`] } ]
         },
         pbc: {
-            name: "Plagueburst Crawler",
+            name: `Plagueburst Crawler`,
             stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' },
-            wargear: [ { name: 'Plagueburst Mortar', type: 'Ranged', stats: { range: '48"', a: 'D6+3', bs: '3+', s: '8', ap: '-1', d: '2' }, kw: 'BLAST, INDIRECT, LETHAL' }, { name: 'Entropy Cannon', type: 'Ranged', stats: { range: '36"', a: '1', bs: '3+', s: '10', ap: '-3', d: 'D6+1' }, kw: 'LETHAL HITS' } ],
-            abilities: [ { name: 'Spore-laced Shock Waves', desc: 'In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted. On a 6+, the unit being rolled for is struck by spores; after resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.', phases: ['shooting'] } ]
+            wargear: [ { name: `Plagueburst Mortar`, type: `Ranged`, stats: { range: `48"`, a: `D6+3`, bs: `3+`, s: `8`, ap: `-1`, d: `2` }, kw: `BLAST, INDIRECT, LETHAL` }, { name: `Entropy Cannon`, type: `Ranged`, stats: { range: `36"`, a: `1`, bs: `3+`, s: `10`, ap: `-3`, d: `D6+1` }, kw: `LETHAL HITS` } ],
+            abilities: [ { name: `Spore-laced Shock Waves`, desc: `In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted. On a 6+, the unit being rolled for is struck by spores; after resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.`, phases: [`shooting`] } ]
         }
     };
 
@@ -406,53 +389,52 @@
         { id: 'opponent_end', label: 'End Opp Turn' }
     ];
 
-    // --- 2. STRATAGEMS (OFFICIAL WORDING) ---
     const STRATAGEMS = {
         command: [
-            { name: "Blooming Pestilence (1CP)", desc: "<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One DEATH GUARD unit from your army.<br><strong>EFFECT:</strong> Until the start of your next Command phase, the Contagion Range of models in your unit is increased by 3\".", type: 'dg' },
-            { name: "Signal Pox (1CP)", desc: "<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One enemy unit that is visible to a DEATH GUARD model from your army.<br><strong>EFFECT:</strong> Until the start of your next Command phase, that enemy unit is Afflicted.", type: 'dg' },
-            { name: "Command Re-roll (1CP)", desc: "<strong>WHEN:</strong> Any phase, just after you have made a Hit roll, a Wound roll, a Damage roll, a saving throw, an Advance roll, a Charge roll, a Desperate Escape test, a Hazardous test, or just after you have rolled the dice to determine the number of attacks made with a weapon, for a unit from your army.<br><strong>EFFECT:</strong> You re-roll that roll, test or saving throw.", type: 'core' },
-            { name: "New Orders (1CP)", desc: "<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One unit from your army that is within range of an objective marker you control.<br><strong>EFFECT:</strong> That objective marker remains under your control, even if you have no models within range of it, until your opponent controls it at the start or end of any turn.", type: 'core' },
-            { name: "Insane Bravery (1CP)", desc: "<strong>WHEN:</strong> Battle-shock step of your Command phase, just after you have failed a Battle-shock test for a unit from your army.<br><strong>TARGET:</strong> The unit that failed that test.<br><strong>EFFECT:</strong> Your unit is treated as having passed that test.", type: 'core' }
+            { name: `Blooming Pestilence (1CP)`, desc: `<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One DEATH GUARD unit from your army.<br><strong>EFFECT:</strong> Until the start of your next Command phase, the Contagion Range of models in your unit is increased by 3".`, type: 'dg' },
+            { name: `Signal Pox (1CP)`, desc: `<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One enemy unit that is visible to a DEATH GUARD model from your army.<br><strong>EFFECT:</strong> Until the start of your next Command phase, that enemy unit is Afflicted.`, type: 'dg' },
+            { name: `Command Re-roll (1CP)`, desc: `<strong>WHEN:</strong> Any phase, just after you have made a Hit roll, a Wound roll, a Damage roll, a saving throw, an Advance roll, a Charge roll, a Desperate Escape test, a Hazardous test, or just after you have rolled the dice to determine the number of attacks made with a weapon, for a unit from your army.<br><strong>EFFECT:</strong> You re-roll that roll, test or saving throw.`, type: 'core' },
+            { name: `New Orders (1CP)`, desc: `<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One unit from your army that is within range of an objective marker you control.<br><strong>EFFECT:</strong> That objective marker remains under your control, even if you have no models within range of it, until your opponent controls it at the start or end of any turn.`, type: 'core' },
+            { name: `Insane Bravery (1CP)`, desc: `<strong>WHEN:</strong> Battle-shock step of your Command phase, just after you have failed a Battle-shock test for a unit from your army.<br><strong>TARGET:</strong> The unit that failed that test.<br><strong>EFFECT:</strong> Your unit is treated as having passed that test.`, type: 'core' }
         ],
         movement: [
-            { name: "Blooming Pestilence (1CP)", desc: "<strong>WHEN:</strong> Your Command phase (Active during Movement).<br><strong>EFFECT:</strong> Aura ranges +3\".", type: 'dg' },
-             { name: "Rapid Ingress (1CP)", desc: "<strong>WHEN:</strong> End of your opponent's Movement phase.<br><strong>TARGET:</strong> One unit from your army that is in Reserves.<br><strong>EFFECT:</strong> Your unit can arrive on the battlefield as if it were the Reinforcements step of your Movement phase.", type: 'core' }
+            { name: `Blooming Pestilence (1CP)`, desc: `<strong>WHEN:</strong> Your Command phase (Active during Movement).<br><strong>EFFECT:</strong> Aura ranges +3".`, type: 'dg' },
+             { name: `Rapid Ingress (1CP)`, desc: `<strong>WHEN:</strong> End of your opponent's Movement phase.<br><strong>TARGET:</strong> One unit from your army that is in Reserves.<br><strong>EFFECT:</strong> Your unit can arrive on the battlefield as if it were the Reinforcements step of your Movement phase.`, type: 'core' }
         ],
         shooting: [
-            { name: "Mortarions Teachings (1CP)", desc: "<strong>WHEN:</strong> Start of your Shooting phase.<br><strong>TARGET:</strong> One DEATH GUARD unit from your army.<br><strong>EFFECT:</strong> Until the end of the phase, ranged weapons equipped by models in your unit have the [SUSTAINED HITS 1] ability. If such a weapon already has this ability, until the end of the phase, each time an attack is made with that weapon, a Critical Hit is scored on an unmodified Hit roll of 5+ instead of 6.", type: 'dg' },
-            { name: "Grenade (1CP)", desc: "<strong>WHEN:</strong> Your Shooting phase.<br><strong>TARGET:</strong> One GRENADES unit from your army that is not within Engagement Range of any enemy units and has not been selected to shoot this phase.<br><strong>EFFECT:</strong> Select one enemy unit that is not within Engagement Range of any units from your army and is within 8\" of and visible to your unit. Roll six D6: for each 4+, that enemy unit suffers 1 mortal wound.", type: 'core' },
-            { name: "Command Re-roll (1CP)", desc: "<strong>EFFECT:</strong> Re-roll one die.", type: 'core' }
+            { name: `Mortarions Teachings (1CP)`, desc: `<strong>WHEN:</strong> Start of your Shooting phase.<br><strong>TARGET:</strong> One DEATH GUARD unit from your army.<br><strong>EFFECT:</strong> Until the end of the phase, ranged weapons equipped by models in your unit have the [SUSTAINED HITS 1] ability. If such a weapon already has this ability, until the end of the phase, each time an attack is made with that weapon, a Critical Hit is scored on an unmodified Hit roll of 5+ instead of 6.`, type: 'dg' },
+            { name: `Grenade (1CP)`, desc: `<strong>WHEN:</strong> Your Shooting phase.<br><strong>TARGET:</strong> One GRENADES unit from your army that is not within Engagement Range of any enemy units and has not been selected to shoot this phase.<br><strong>EFFECT:</strong> Select one enemy unit that is not within Engagement Range of any units from your army and is within 8" of and visible to your unit. Roll six D6: for each 4+, that enemy unit suffers 1 mortal wound.`, type: 'core' },
+            { name: `Command Re-roll (1CP)`, desc: `<strong>EFFECT:</strong> Re-roll one die.`, type: 'core' }
         ],
         charge: [
-            { name: "Sickening Impact (1CP)", desc: "<strong>WHEN:</strong> Charge phase, just after a DEATH GUARD unit from your army ends a Charge move.<br><strong>TARGET:</strong> That DEATH GUARD unit.<br><strong>EFFECT:</strong> Select one enemy unit within Engagement Range of your unit and roll one D6 for each model in your unit: for each 4+, that enemy unit suffers 1 mortal wound.", type: 'dg' },
-            { name: "Tank Shock (1CP)", desc: "<strong>WHEN:</strong> Charge phase.<br><strong>TARGET:</strong> One VEHICLE unit from your army.<br><strong>EFFECT:</strong> Select one enemy unit within Engagement Range of your unit and select one melee weapon your unit is equipped with. Roll a number of D6 equal to that weapon's Strength characteristic. If that Strength characteristic is greater than that enemy unit's Toughness characteristic, roll two additional D6. For each 5+, that enemy unit suffers 1 mortal wound (to a maximum of 6 mortal wounds).", type: 'core' }
+            { name: `Sickening Impact (1CP)`, desc: `<strong>WHEN:</strong> Charge phase, just after a DEATH GUARD unit from your army ends a Charge move.<br><strong>TARGET:</strong> That DEATH GUARD unit.<br><strong>EFFECT:</strong> Select one enemy unit within Engagement Range of your unit and roll one D6 for each model in your unit: for each 4+, that enemy unit suffers 1 mortal wound.`, type: 'dg' },
+            { name: `Tank Shock (1CP)`, desc: `<strong>WHEN:</strong> Charge phase.<br><strong>TARGET:</strong> One VEHICLE unit from your army.<br><strong>EFFECT:</strong> Select one enemy unit within Engagement Range of your unit and select one melee weapon your unit is equipped with. Roll a number of D6 equal to that weapon's Strength characteristic. If that Strength characteristic is greater than that enemy unit's Toughness characteristic, roll two additional D6. For each 5+, that enemy unit suffers 1 mortal wound (to a maximum of 6 mortal wounds).`, type: 'core' }
         ],
         fight: [
-            { name: "Grim Reapers (1CP)", desc: "<strong>WHEN:</strong> Fight phase.<br><strong>TARGET:</strong> One BLIGHTLORD TERMINATORS or DEATHSHROUD TERMINATORS unit from your army that has not been selected to fight this phase.<br><strong>EFFECT:</strong> Until the end of the phase, each time a model in your unit makes an attack, you can re-roll the Hit roll.", type: 'dg' },
-            { name: "Undying Spite (1CP)", desc: "<strong>WHEN:</strong> Fight phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One DEATH GUARD CHARACTER unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, each time a model in your unit is destroyed, if that model has not fought this phase, do not remove it from play. The destroyed model can fight after the attacking model’s unit has finished making its attacks, and is then removed from play.", type: 'dg' },
-            { name: "Epic Challenge (1CP)", desc: "<strong>WHEN:</strong> Fight phase, when a CHARACTER unit from your army that is within Engagement Range of one or more attached units is selected to fight.<br><strong>TARGET:</strong> One CHARACTER model in your unit.<br><strong>EFFECT:</strong> Until the end of the phase, all melee attacks made by that model have the [PRECISION] ability.", type: 'core' },
-            { name: "Counter-Offensive (2CP)", desc: "<strong>WHEN:</strong> Fight phase, just after an enemy unit has fought.<br><strong>TARGET:</strong> One unit from your army that is within Engagement Range of one or more enemy units and that has not fought this phase.<br><strong>EFFECT:</strong> Your unit fights next.", type: 'core' }
+            { name: `Grim Reapers (1CP)`, desc: `<strong>WHEN:</strong> Fight phase.<br><strong>TARGET:</strong> One BLIGHTLORD TERMINATORS or DEATHSHROUD TERMINATORS unit from your army that has not been selected to fight this phase.<br><strong>EFFECT:</strong> Until the end of the phase, each time a model in your unit makes an attack, you can re-roll the Hit roll.`, type: 'dg' },
+            { name: `Undying Spite (1CP)`, desc: `<strong>WHEN:</strong> Fight phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One DEATH GUARD CHARACTER unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, each time a model in your unit is destroyed, if that model has not fought this phase, do not remove it from play. The destroyed model can fight after the attacking model’s unit has finished making its attacks, and is then removed from play.`, type: 'dg' },
+            { name: `Epic Challenge (1CP)`, desc: `<strong>WHEN:</strong> Fight phase, when a CHARACTER unit from your army that is within Engagement Range of one or more attached units is selected to fight.<br><strong>TARGET:</strong> One CHARACTER model in your unit.<br><strong>EFFECT:</strong> Until the end of the phase, all melee attacks made by that model have the [PRECISION] ability.`, type: 'core' },
+            { name: `Counter-Offensive (2CP)`, desc: `<strong>WHEN:</strong> Fight phase, just after an enemy unit has fought.<br><strong>TARGET:</strong> One unit from your army that is within Engagement Range of one or more enemy units and that has not fought this phase.<br><strong>EFFECT:</strong> Your unit fights next.`, type: 'core' }
         ],
         opp_movement: [
-            { name: "Rapid Ingress (1CP)", desc: "<strong>WHEN:</strong> End of your opponent's Movement phase.<br><strong>TARGET:</strong> One unit from your army that is in Reserves.<br><strong>EFFECT:</strong> Your unit can arrive on the battlefield as if it were the Reinforcements step of your Movement phase.", type: 'core' },
-            { name: "Fire Overwatch (1CP)", desc: "<strong>WHEN:</strong> Your opponent's Movement or Charge phase, just after an enemy unit is set up or when an enemy unit starts or ends a Normal, Advance, Fall Back or Charge move.<br><strong>TARGET:</strong> One unit from your army that is within 24\" of that enemy unit and that would be eligible to shoot if it were your Shooting phase.<br><strong>EFFECT:</strong> Your unit can shoot that enemy unit as if it were your Shooting phase. Until the end of the phase, each time a model in your unit makes a ranged attack, an unmodified Hit roll of 6 is required to score a hit, irrespective of any modifiers.", type: 'core' }
+            { name: `Rapid Ingress (1CP)`, desc: `<strong>WHEN:</strong> End of your opponent's Movement phase.<br><strong>TARGET:</strong> One unit from your army that is in Reserves.<br><strong>EFFECT:</strong> Your unit can arrive on the battlefield as if it were the Reinforcements step of your Movement phase.`, type: 'core' },
+            { name: `Fire Overwatch (1CP)`, desc: `<strong>WHEN:</strong> Your opponent's Movement or Charge phase, just after an enemy unit is set up or when an enemy unit starts or ends a Normal, Advance, Fall Back or Charge move.<br><strong>TARGET:</strong> One unit from your army that is within 24" of that enemy unit and that would be eligible to shoot if it were your Shooting phase.<br><strong>EFFECT:</strong> Your unit can shoot that enemy unit as if it were your Shooting phase. Until the end of the phase, each time a model in your unit makes a ranged attack, an unmodified Hit roll of 6 is required to score a hit, irrespective of any modifiers.`, type: 'core' }
         ],
         opp_shooting: [
-            { name: "Smokescreen (1CP)", desc: "<strong>WHEN:</strong> Your opponent's Shooting phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One SMOKE unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, your unit has the Benefit of Cover and the Stealth ability.", type: 'core' },
-            { name: "Go To Ground (1CP)", desc: "<strong>WHEN:</strong> Your opponent's Shooting phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One INFANTRY unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, models in your unit have a 6+ invulnerable save and have the Benefit of Cover.", type: 'core' }
+            { name: `Smokescreen (1CP)`, desc: `<strong>WHEN:</strong> Your opponent's Shooting phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One SMOKE unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, your unit has the Benefit of Cover and the Stealth ability.`, type: 'core' },
+            { name: `Go To Ground (1CP)`, desc: `<strong>WHEN:</strong> Your opponent's Shooting phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One INFANTRY unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, models in your unit have a 6+ invulnerable save and have the Benefit of Cover.`, type: 'core' }
         ],
         opp_charge: [
-             { name: "Heroic Intervention (2CP)", desc: "<strong>WHEN:</strong> Your opponent's Charge phase, just after an enemy unit ends a Charge move.<br><strong>TARGET:</strong> One unit from your army that is within 6\" of that enemy unit and would be eligible to declare a charge.<br><strong>EFFECT:</strong> Your unit now declares a charge that targets only that enemy unit, and you resolve that charge as if it were your Charge phase. Your unit does not receive any Charge bonus this turn.", type: 'core' },
-             { name: "Fire Overwatch (1CP)", desc: "<strong>WHEN:</strong> Start or End of Charge move.<br><strong>EFFECT:</strong> Shoot on 6s.", type: 'core' }
+             { name: `Heroic Intervention (2CP)`, desc: `<strong>WHEN:</strong> Your opponent's Charge phase, just after an enemy unit ends a Charge move.<br><strong>TARGET:</strong> One unit from your army that is within 6" of that enemy unit and would be eligible to declare a charge.<br><strong>EFFECT:</strong> Your unit now declares a charge that targets only that enemy unit, and you resolve that charge as if it were your Charge phase. Your unit does not receive any Charge bonus this turn.`, type: 'core' },
+             { name: `Fire Overwatch (1CP)`, desc: `<strong>WHEN:</strong> Start or End of Charge move.<br><strong>EFFECT:</strong> Shoot on 6s.`, type: 'core' }
         ],
         opp_fight: [
-             { name: "Counter-Offensive (2CP)", desc: "<strong>WHEN:</strong> Fight phase, just after an enemy unit has fought.<br><strong>EFFECT:</strong> Interrupt fight order.", type: 'core' }
+             { name: `Counter-Offensive (2CP)`, desc: `<strong>WHEN:</strong> Fight phase, just after an enemy unit has fought.<br><strong>EFFECT:</strong> Interrupt fight order.`, type: 'core' }
         ]
     };
 
     // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_final_v5';
+    const STATE_KEY = 'dg_chosen_final_v6';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
@@ -639,6 +621,7 @@
 
         let html = '';
         strats.forEach((s, index) => {
+            // Using index ID to prevent string escape errors
             html += `<div class="strat-pill ${s.type}" onclick="openStrat('${key}', ${index})">${s.name}</div>`;
         });
         bar.innerHTML = html;
@@ -646,6 +629,7 @@
     
     function openStrat(phaseKey, index) {
         const s = STRATAGEMS[phaseKey][index];
+        // Simple alert using template literal
         alert(`${s.name}\n\n${s.desc.replace(/<br>/g, "\n").replace(/<strong>/g, "").replace(/<\/strong>/g, "")}`);
     }
 
@@ -667,14 +651,12 @@
             el.style.color = (v === 0) ? 'var(--kw-neg)' : 'inherit';
         }
 
-        // Show/Hide Deadly Demise if specific model died
-        const ddEl = document.getElementById(`dd_${uid}`);
-        if(ddEl && v === 0 && diff < 0) { // Only show on death
-             ddEl.style.display = 'block';
-             setTimeout(() => { ddEl.style.display = 'none'; }, 5000); // Auto hide after 5s
+        const baseUid = key.substring(0, key.lastIndexOf('_'));
+        if(v === 0) {
+            const ddEl = document.getElementById(`dd_${baseUid}`);
+            if(ddEl) ddEl.style.display = 'block';
         }
 
-        // Check Unit Status
         checkUnitStatus(uid, count, max);
     }
 
@@ -692,7 +674,8 @@
         
         const bsEl = document.getElementById(`bs_${uid}`);
         const cardEl = document.getElementById(`card_${uid}`);
-        
+        const sidebarBtn = document.getElementById(`btn_${uid.split('_')[0]}_${uid.split('_')[1]}`); // Approximation
+
         if(bsEl && cardEl) {
             if(currentModels < halfStrengthThreshold) {
                 bsEl.style.display = 'block';
