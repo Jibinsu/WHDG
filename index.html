@@ -344,54 +344,53 @@
         { id: 'opponent_end', label: 'End Opp Turn' }
     ];
 
-    // --- 2. STRATAGEMS (UPDATED & DETAILED) ---
+    // --- 2. STRATAGEMS (UPDATED) ---
     const STRATAGEMS = {
         command: [
-            { name: "Blooming Pestilence (1CP)", desc: "WHEN: Command Phase.\nTARGET: One DG Unit.\nEFFECT: Until next Command Phase, Aura ranges increase by 3\".", type: 'dg' },
-            { name: "Signal Pox (1CP)", desc: "WHEN: Command Phase.\nTARGET: One visible enemy unit.\nEFFECT: That unit becomes AFFLICTED until your next Command Phase.", type: 'dg' },
-            { name: "Command Re-roll (1CP)", desc: "WHEN: Any phase, after a roll.\nEFFECT: Re-roll 1 Hit, Wound, Damage, Save, Advance, Charge, or Hazard test.", type: 'core' },
-            { name: "New Orders (1CP)", desc: "WHEN: Command Phase.\nTARGET: Unit in range of objective.\nEFFECT: If you control it, it remains under your control if you move away.", type: 'core' },
-            { name: "Insane Bravery (1CP)", desc: "WHEN: Battleshock step.\nTARGET: Unit that failed Battleshock.\nEFFECT: It automatically passes.", type: 'core' }
+            { name: "Blooming Pestilence (1CP)", desc: "WHEN: Command Phase.\nTARGET: One DG Unit.\nEFFECT: Aura ranges +3 inches.", type: 'dg' },
+            { name: "Signal Pox (1CP)", desc: "WHEN: Command Phase.\nTARGET: One visible enemy unit within 18 inches.\nEFFECT: Unit becomes AFFLICTED.", type: 'dg' },
+            { name: "Command Re-roll (1CP)", desc: "WHEN: Any phase.\nEFFECT: Re-roll 1 die.", type: 'core' },
+            { name: "New Orders (1CP)", desc: "WHEN: Command Phase.\nEFFECT: Unit holds objective if moving away.", type: 'core' },
+            { name: "Insane Bravery (1CP)", desc: "WHEN: Battleshock.\nEFFECT: Unit automatically passes.", type: 'core' }
         ],
         movement: [
-            { name: "Blooming Pestilence (1CP)", desc: "WHEN: Command Phase (Lasts through move).\nEFFECT: Extends Aura ranges by 3\".", type: 'dg' }
+            { name: "Blooming Pestilence (1CP)", desc: "WHEN: Command Phase.\nEFFECT: Aura ranges +3 inches.", type: 'dg' }
         ],
         shooting: [
-            { name: "Mortarion's Teachings (1CP)", desc: "WHEN: Start of Shooting Phase.\nTARGET: One DG Unit.\nEFFECT: Ranged weapons gain [SUSTAINED HITS 1]. If they already have it, Critical Hits trigger on 5+.", type: 'dg' },
-            { name: "Blooming Pestilence (1CP)", desc: "(Active if used in Command Phase).", type: 'dg' },
-            { name: "Grenade (1CP)", desc: "WHEN: Shooting Phase.\nTARGET: Grenades unit vs enemy within 8\".\nEFFECT: Roll 6D6. 4+ = 1 MW.", type: 'core' },
-            { name: "Command Re-roll (1CP)", desc: "Re-roll Hit/Wound/Damage.", type: 'core' }
+            { name: "Mortarions Teachings (1CP)", desc: "WHEN: Start of Shooting.\nTARGET: One DG Unit.\nEFFECT: Ranged weapons gain [SUSTAINED HITS 1]. If present, Criticals on 5+.", type: 'dg' },
+            { name: "Grenade (1CP)", desc: "WHEN: Shooting Phase.\nRANGE: 8 inches.\nEFFECT: Roll 6D6. 4+ = 1 MW.", type: 'core' },
+            { name: "Command Re-roll (1CP)", desc: "Core Re-roll.", type: 'core' }
         ],
         charge: [
-            { name: "Sickening Impact (1CP)", desc: "WHEN: Charge Phase, after a DG unit finishes a charge.\nTARGET: That DG unit.\nEFFECT: Roll D6 for each model in unit. 4+ = 1 MW to enemy within Engagement Range.", type: 'dg' },
-            { name: "Tank Shock (1CP)", desc: "WHEN: Charge Phase.\nTARGET: Vehicle unit.\nEFFECT: Roll D6 equal to Toughness. 5+ = 1 MW (max 6).", type: 'core' },
-            { name: "Heroic Intervention (2CP)", desc: "WHEN: Opponent Charge Phase.\nTARGET: Unit within 6\" of enemy.\nEFFECT: Charge immediately.", type: 'core' } // Note: Usually 2CP
+            { name: "Sickening Impact (1CP)", desc: "WHEN: Charge Phase.\nTARGET: Charging DG Unit.\nEFFECT: Roll D6 per model. 4+ = 1 MW to enemy in Engagement.", type: 'dg' },
+            { name: "Tank Shock (1CP)", desc: "WHEN: Charge Phase.\nTARGET: Vehicle.\nEFFECT: Roll D6 = Toughness. 5+ = 1 MW.", type: 'core' },
+            { name: "Heroic Intervention (2CP)", desc: "WHEN: Opponent Charge.\nRANGE: 6 inches.\nEFFECT: Charge into combat.", type: 'core' }
         ],
         fight: [
-            { name: "Grim Reapers (1CP)", desc: "WHEN: Fight Phase.\nTARGET: Deathshroud or Blightlord unit.\nEFFECT: Re-roll Hit rolls.", type: 'dg' },
-            { name: "Undying Spite (1CP)", desc: "WHEN: Fight Phase, just after a DG Character is destroyed.\nEFFECT: Model fights on death before being removed.", type: 'dg' },
-            { name: "Epic Challenge (1CP)", desc: "WHEN: Fight Phase.\nTARGET: Character.\nEFFECT: Melee attacks gain [PRECISION].", type: 'core' },
-            { name: "Counter-Offensive (2CP)", desc: "WHEN: Fight Phase, after an enemy unit fights.\nEFFECT: Pick a unit to fight next.", type: 'core' }
+            { name: "Grim Reapers (1CP)", desc: "WHEN: Fight Phase.\nTARGET: Deathshroud/Blightlords.\nEFFECT: Re-roll Hit rolls.", type: 'dg' },
+            { name: "Undying Spite (1CP)", desc: "WHEN: Character Destroyed.\nEFFECT: Fight on Death.", type: 'dg' },
+            { name: "Epic Challenge (1CP)", desc: "WHEN: Fight Phase.\nEFFECT: Attacks gain [PRECISION].", type: 'core' },
+            { name: "Counter-Offensive (2CP)", desc: "WHEN: After enemy fights.\nEFFECT: Interrupt.", type: 'core' }
         ],
         opp_movement: [
-            { name: "Rapid Ingress (1CP)", desc: "WHEN: End of Opponent Movement.\nTARGET: Unit in Reserves.\nEFFECT: Deep Strike now (safe from shooting usually).", type: 'core' },
-            { name: "Fire Overwatch (1CP)", desc: "WHEN: Start or End of Move.\nEFFECT: Shoot as if Shooting phase (Hit on 6s).", type: 'core' }
+            { name: "Rapid Ingress (1CP)", desc: "WHEN: End of Opp Move.\nRANGE: N/A (Reserves).\nEFFECT: Deep Strike now.", type: 'core' },
+            { name: "Fire Overwatch (1CP)", desc: "WHEN: Start/End of Move.\nRANGE: 24 inches.\nEFFECT: Shoot on 6s.", type: 'core' }
         ],
         opp_shooting: [
-            { name: "Smokescreen (1CP)", desc: "WHEN: Opponent Shooting.\nTARGET: Smoke unit (Vehicle).\nEFFECT: Stealth (-1 to Hit) and Cover.", type: 'core' },
-            { name: "Go To Ground (1CP)", desc: "WHEN: Opponent Shooting.\nTARGET: Infantry.\nEFFECT: Benefit of Cover and 6++ Invuln.", type: 'core' }
+            { name: "Smokescreen (1CP)", desc: "WHEN: Opp Shooting.\nTARGET: Smoke Unit.\nEFFECT: Stealth and Cover.", type: 'core' },
+            { name: "Go To Ground (1CP)", desc: "WHEN: Opp Shooting.\nTARGET: Infantry.\nEFFECT: Cover and 6++ Invuln.", type: 'core' }
         ],
         opp_charge: [
-             { name: "Heroic Intervention (2CP)", desc: "WHEN: Opponent Charge.\nTARGET: Unit within 6\" of enemy.\nEFFECT: Charge into combat.", type: 'core' },
-             { name: "Fire Overwatch (1CP)", desc: "WHEN: Start or End of Charge move.\nEFFECT: Shoot on 6s.", type: 'core' }
+             { name: "Heroic Intervention (2CP)", desc: "WHEN: Opp Charge.\nRANGE: 6 inches.\nEFFECT: Charge enemy.", type: 'core' },
+             { name: "Fire Overwatch (1CP)", desc: "WHEN: Charge Move.\nRANGE: 24 inches.\nEFFECT: Shoot on 6s.", type: 'core' }
         ],
         opp_fight: [
-             { name: "Counter-Offensive (2CP)", desc: "WHEN: After enemy fights.\nEFFECT: Interrupt fight order.", type: 'core' }
+             { name: "Counter-Offensive (2CP)", desc: "WHEN: After enemy fights.\nEFFECT: Interrupt.", type: 'core' }
         ]
     };
 
     // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_final_v1';
+    const STATE_KEY = 'dg_chosen_final_v2';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
@@ -555,19 +554,15 @@
         }
 
         let html = '';
-        strats.forEach(s => {
-            // SANITIZE STRINGS FOR ONCLICK
-            const safeName = s.name.replace(/'/g, "\\'");
-            const safeDesc = s.desc.replace(/'/g, "\\'").replace(/\n/g, "<br>");
-            
-            html += `<div class="strat-pill ${s.type}" onclick="showStrat('${safeName}', '${safeDesc}')">${s.name}</div>`;
+        strats.forEach((s, index) => {
+            html += `<div class="strat-pill ${s.type}" onclick="openStrat('${key}', ${index})">${s.name}</div>`;
         });
         bar.innerHTML = html;
     }
     
-    function showStrat(name, desc) {
-        // Simple alert for now, could be a modal
-        alert(`${name}\n\n${desc.replace(/<br>/g, "\n")}`);
+    function openStrat(phaseKey, index) {
+        const s = STRATAGEMS[phaseKey][index];
+        alert(`${s.name}\n\n${s.desc}`);
     }
 
     // --- 5. GAME ENGINE LOGIC ---
