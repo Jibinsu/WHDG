@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Chosen - DG Assistant</title>
+    <title>Death Lord's Chosen - Army Booklet</title>
     <style>
         :root {
             --bg-color: #fdf6e3; --surface-color: #f5efdb; --text-color: #4c463a;
@@ -41,7 +41,7 @@
             width: 300px; flex-shrink: 0; background-color: var(--surface-color); padding: 15px;
             border-right: 2px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto;
         }
-        #unit-list h2 { margin-top: 0; color: var(--header-color); text-align: center; font-size: 1.8em; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        #unit-list h2 { margin-top: 0; color: var(--header-color); text-align: center; font-size: 1.5em; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
         .unit-selector {
             display: block; width: 100%; padding: 12px 15px; margin-bottom: 8px; background-color: var(--bg-color);
             border: 1px solid var(--border-color); color: var(--text-color); text-align: left; cursor: pointer;
@@ -49,12 +49,13 @@
         }
         .unit-selector:hover { border-color: var(--accent-color); box-shadow: 0 0 5px rgba(0,0,0,0.1); }
         .unit-selector.active { background-color: var(--highlight-color); border-color: var(--header-color); color: var(--highlight-text); font-weight: bold; }
+        .unit-selector.rules-btn { border-left: 5px solid var(--keyword-negative-color); font-weight: bold; }
 
         #unit-details-wrapper { flex-grow: 1; display: flex; flex-direction: column; padding: 0 25px; overflow: hidden; }
         
         #unit-details-header {
             display: flex; justify-content: center; align-items: center; gap: 20px;
-            flex-shrink: 0; text-align: center; font-size: 2.5em; font-weight: bold;
+            flex-shrink: 0; text-align: center; font-size: 2em; font-weight: bold;
             color: var(--header-color); padding: 15px 0;
         }
         #unit-count-selector { font-size: 0.6em; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); }
@@ -127,7 +128,7 @@
 
 <div class="app-body">
     <aside id="unit-list">
-        <h2>The Chosen</h2>
+        <h2>Death Lord's Chosen</h2>
     </aside>
     <div id="unit-details-wrapper">
         <div id="unit-details-header">
@@ -142,31 +143,44 @@
 </div>
 
 <script>
-    // --- THE CHOSEN DATA ---
+    // --- DEATH LORD'S CHOSEN DATA ---
     const codexData = [
+        {
+            id: 'rules', name: '☠️ ARMY RULES',
+            stats: null, wargear: [],
+            abilities: {
+                core: [],
+                faction: [
+                    { name: 'SKULLSQUIRM BLIGHT (Army Rule)', desc: 'At start of Battle Round: Select 1 enemy unit within 12" of a Nurgle Character. They are <strong>AFFLICTED</strong>.<br><strong>Effect:</strong> -1 Toughness (cannot be ignored).<br>This triggers "Afflicted" bonuses on your units.', phases: ['command_phase'] },
+                    { name: 'CHOSEN OF THE PLAGUE GOD (Detachment)', desc: 'Whenever a CHARACTER destroys an enemy model, gain 1 Contagion Point (CPt). Spend CPt on detachment stratagems.', phases: ['any'] }
+                ],
+                unit: []
+            },
+            keywords: { main: [], faction: [] }
+        },
         { 
-            id: 'lord_of_contagion', name: 'Lord of Contagion (Warlord)', 
+            id: 'lord_of_contagion', name: 'Lord of Contagion (150pts)', 
             stats: { M: '5"', T: '6', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, 
             wargear: [ 
                 { name: 'Manreaper', type: 'Melee', profiles: [ 
                     { name: 'Strike', range: 'Melee', a: '5', ws: '2+', s: '9', ap: '-3', d: '3', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }, 
-                    { name: 'Sweep', range: 'Melee', a: '10', ws: '2+', s: '5', ap: '0', d: '1', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' } 
+                    { name: 'Sweep', range: 'Melee', a: '10', ws: '2+', s: '6', ap: '-1', d: '1', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' } 
                 ]} 
             ], 
             abilities: { 
                 core: [{ name: 'Deep Strike', phases: ['my_movement'] }, { name: 'Leader', phases: ['pregame'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
                 unit: [ 
-                    { name: 'Vector of Disease', desc: 'While leading a unit, re-roll Hit rolls for melee attacks.', phases: ['fight'] },
-                    { name: 'Abundance of Sickness', desc: 'In Fight phase, if this model loses 1+ wounds, after attacks resolve: roll D6. On 2+, attacker suffers D3 mortal wounds.', phases: ['fight'] },
-                    { name: 'Enhancement: Warprot Talisman', desc: 'Bearer is equipped with the Warprot Talisman.', phases: ['pregame'] }
+                    { name: 'Vector of Disease', desc: 'While leading a unit, their melee weapons gain <strong>[SUSTAINED HITS 1]</strong> and <strong>[LANCE]</strong>.', phases: ['fight'] },
+                    { name: 'Unholy Resilience', desc: 'First time this model is destroyed: Roll D6 at end of phase. On 2+, return with 3 wounds.', phases: ['any'] },
+                    { name: 'Enhancement: Warprot Talisman', desc: '+1 to Feel No Pain rolls the first time bearer is reduced to 0 wounds (lasts phase). Aura range +3".', phases: ['pregame', 'any'] }
                 ], 
                 leader: 'Attached to: Blightlord Terminators, Deathshroud Terminators.' 
             }, 
             keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'LORD OF CONTAGION'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'lord_of_virulence', name: 'Lord of Virulence', 
+            id: 'lord_of_virulence', name: 'Lord of Virulence (120pts)', 
             stats: { M: '5"', T: '6', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, 
             wargear: [ 
                 { name: 'Twin plague spewer', type: 'Ranged', profiles: [{ range: '12"', a: 'D6', bs: 'N/A', s: '5', ap: '-1', d: '1', abilities: '[<span class="kw-neg">ANTI-INFANTRY 2+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">TORRENT</span>, <span class="kw-spec">TWIN-LINKED</span>]' } ]}, 
@@ -176,16 +190,16 @@
                 core: [{ name: 'Deep Strike', phases: ['my_movement'] }, { name: 'Leader', phases: ['pregame'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
                 unit: [ 
-                    { name: 'Virulent Aura', desc: 'While leading a unit, re-roll Wound rolls for ranged attacks.', phases: ['my_shooting', 'opponent_shooting'] }, 
-                    { name: 'Blight Bombardment', desc: 'Start of Shooting: Select visible enemy within 30". Blast weapons targeting them re-roll Hits. Others re-roll 1s to Hit.', phases: ['my_shooting']},
-                    { name: 'Enhancement: Helm of The Fly King', desc: 'Bearer is equipped with the Helm of The Fly King.', phases: ['pregame'] }
+                    { name: 'Virulent Aura', desc: 'While leading a unit, re-roll <strong>Wound rolls</strong> for ranged attacks.', phases: ['my_shooting', 'opponent_shooting'] }, 
+                    { name: 'Blight Bombardment', desc: 'Start of Shooting: Select visible enemy within 30". Blast weapons re-roll Hits vs target. Others re-roll Hit rolls of 1.', phases: ['my_shooting']},
+                    { name: 'Enhancement: Helm of The Fly King', desc: 'Enemy units within 6" suffer -1 to Hit (ranged and melee). If leading a unit, applies to them too.', phases: ['aura', 'my_shooting', 'fight', 'opponent_shooting'] }
                 ], 
                 leader: 'Attached to: Blightlord Terminators, Deathshroud Terminators.' 
             }, 
             keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'LORD OF VIRULENCE'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'typhus', name: 'Typhus', 
+            id: 'typhus', name: 'Typhus (100pts)', 
             stats: { M: '5"', T: '6', Sv: '2+', W: '6', Ld: '6+', OC: '1', invuln: '4+' }, 
             wargear: [ 
                 { name: 'Lakrimae', type: 'Melee', profiles: [ 
@@ -197,35 +211,34 @@
                 core: [{ name: 'Deep Strike', phases: ['my_movement'] }, { name: 'Leader', phases: ['pregame'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
                 unit: [ 
-                    { name: 'Destroyer Hive', desc: 'While leading a unit, -1 to Hit for melee attacks targeting that unit.', phases: ['fight'] }, 
-                    { name: 'Host of the Destroyer Plague', desc: 'While leading a unit, unit gets FNP 6+ (Poxwalkers get FNP 5+).', phases: ['any'] }, 
-                    { name: 'Eater Plague (Psychic)', desc: 'Your Shooting Phase: Select enemy within 18". Roll D6. 1: You take D3 MW. 2-5: Enemy takes D6 MW. 6: Enemy takes D3+3 MW.', phases: ['my_shooting'] } 
+                    { name: 'Destroyer Hive', desc: 'While leading a unit, <strong>-1 to Hit</strong> for melee attacks targeting that unit.', phases: ['fight'] }, 
+                    { name: 'Eater Plague (Psychic)', desc: 'Start of Shooting: Select visible enemy within 18". Roll D6.<br>1: You take D3 MW.<br>2-5: Enemy takes D6 MW.<br>6: Enemy takes D3+3 MW.', phases: ['my_shooting'] } 
                 ], 
                 leader: 'Attached to: Blightlord Terminators, Deathshroud Terminators, Poxwalkers.' 
             }, 
             keywords: { main: ['INFANTRY', 'CHARACTER', 'PSYKER', 'EPIC HERO', 'CHAOS', 'NURGLE', 'TERMINATOR', 'TYPHUS'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'blightlord_terminators', name: 'Blightlord Terminators', 
-            stats: { M: '5"', T: '6', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' }, 
+            id: 'blightlord_terminators', name: 'Blightlord Terminators (185pts)', 
+            stats: { M: '5"', T: '7', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' }, 
             wargear: [ 
                 { name: 'Combi-bolter', type: 'Ranged', profiles: [{ range: '24"', a: '2', bs: '3+', s: '4', ap: '0', d: '1', abilities: '[<span class="kw-pos">LETHAL HITS</span>, <span class="kw-spec">RAPID FIRE 2</span>]' }]}, 
-                { name: 'Blight launcher', type: 'Ranged', profiles: [{ range: '24"', a: '2', bs: '3+', s: '6', ap: '-1', d: '2', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }]}, 
-                { name: 'Reaper autocannon', type: 'Ranged', profiles: [{ range: '36"', a: '4', bs: '3+', s: '7', ap: '-1', d: '1', abilities: '[<span class="kw-pos">SUSTAINED HITS 1</span>, <span class="kw-neg">DEVASTATING WOUNDS</span>, <span class="kw-pos">LETHAL HITS</span>]' }]}, 
+                { name: 'Blight launcher', type: 'Ranged', profiles: [{ range: '24"', a: 'D3', bs: '3+', s: '6', ap: '-1', d: '2', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }]}, 
+                { name: 'Reaper autocannon', type: 'Ranged', profiles: [{ range: '36"', a: '4', bs: '3+', s: '7', ap: '-1', d: '1', abilities: '[<span class="kw-pos">SUSTAINED HITS 1</span>]' }]}, 
                 { name: 'Plague spewer', type: 'Ranged', profiles: [{ range: '12"', a: 'D6', bs: 'N/A', s: '5', ap: '-1', d: '1', abilities: '[<span class="kw-neg">ANTI-INFANTRY 2+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">TORRENT</span>]' }]}, 
-                { name: 'Flail of corruption', type: 'Melee', profiles: [{ range: 'Melee', a: '6', ws: '3+', s: '5', ap: '-2', d: '2', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }]}, 
+                { name: 'Flail of corruption', type: 'Melee', profiles: [{ range: 'Melee', a: '6', ws: '3+', s: '5', ap: '-1', d: '2', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }]}, 
                 { name: 'Bubotic blade', type: 'Melee', profiles: [{ range: 'Melee', a: '3', ws: '3+', s: '5', ap: '-2', d: '2', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }]} 
             ], 
             abilities: { 
                 core: [{ name: 'Deep Strike', phases: ['my_movement'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
-                unit: [ { name: 'Blistering Fusillade', desc: 'If Starting Strength 5+ OR Led by Character: +1 Strength and +1 AP against Afflicted units.', phases: ['my_shooting'] } ] 
+                unit: [ { name: 'Blistering Fusillade', desc: 'If 5+ models OR Led by Character: <strong>+1 Strength and +1 AP</strong> against <strong>AFFLICTED</strong> units.', phases: ['my_shooting'] } ] 
             }, 
             keywords: { main: ['INFANTRY', 'CHAOS', 'NURGLE', 'TERMINATOR', 'BLIGHTLORD TERMINATORS'], faction: ['DEATH GUARD']} 
         },
         { 
             id: 'deathshroud_terminators', name: 'Deathshroud Terminators', 
-            stats: { M: '5"', T: '6', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' }, 
+            stats: { M: '5"', T: '7', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' }, 
             wargear: [ 
                 { name: 'Plaguespurt gauntlet', type: 'Ranged', profiles: [ { range: '12"', a: 'D6', bs: 'N/A', s: '3', ap: '0', d: '1', abilities: '[<span class="kw-neg">ANTI-INFANTRY 4+</span>, <span class="kw-spec">IGNORES COVER</span>, <span class="kw-spec">PISTOL</span>, <span class="kw-spec">TORRENT</span>]' } ]}, 
                 { name: 'Manreaper', type: 'Melee', profiles: [ { name: 'Strike', range: 'Melee', a: '4', ws: '2+', s: '8', ap: '-2', d: '2', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' }, { name: 'Sweep', range: 'Melee', a: '8', ws: '3+', s: '4', ap: '-1', d: '1', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' } ]} 
@@ -234,44 +247,44 @@
                 core: [{ name: 'Deep Strike', phases: ['my_movement'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
                 unit: [ 
-                    { name: 'Silent Bodyguard', desc: 'Attached CHARACTER has Feel No Pain 4+.', phases: ['any'] }, 
-                    { name: 'Death Approaches', desc: 'Deep Strike > 6" away from Afflicted units (instead of 9").', phases: ['my_movement'] } 
+                    { name: 'Silent Bodyguard', desc: 'Attached CHARACTER has <strong>Feel No Pain 4+</strong>.', phases: ['any'] }, 
+                    { name: 'Death Approaches', desc: 'Deep Strike > 6" away from <strong>AFFLICTED</strong> enemy units (instead of 9").', phases: ['my_movement'] } 
                 ], 
                 wargear_abilities: [ { name: 'Icon of Despair (Aura)', desc: 'Enemy units within 6" get -1 Leadership.', phases: ['aura'] } ] 
             }, 
             keywords: { main: ['INFANTRY', 'CHARACTER', 'CHAOS', 'NURGLE', 'TERMINATOR', 'DEATHSHROUD TERMINATORS'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'chaos_spawn', name: 'Chaos Spawn', 
+            id: 'chaos_spawn', name: 'Chaos Spawn (80pts)', 
             stats: { M: '8"', T: '5', Sv: '4+', W: '4', Ld: '7+', OC: '1', invuln: '5+' }, 
             wargear: [ 
                 { name: 'Hideous mutations', type: 'Melee', profiles: [ { range: 'Melee', a: 'D6+2', ws: '4+', s: '5', ap: '-1', d: '2', abilities: '' } ]} 
             ], 
             abilities: { 
-                core: [{ name: 'Feel No Pain 5+', phases: ['any'] }], 
+                core: [{ name: 'Feel No Pain 5+', phases: ['any'] }, { name: 'Scouts 6"', phases: ['pregame'] }, { name: 'Deadly Demise 1', phases: ['any'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
                 unit: [ 
-                    { name: 'Regenerate', desc: 'In Command Phase, one model in this unit regains up to D3 lost wounds.', phases: ['command_phase'] }
+                    { name: 'Lethal Ichor', desc: 'Melee: After enemy finishes attacking, roll D6 per enemy unit (max 6D6). On 4+, enemy suffers 1 MW.', phases: ['fight'] }
                 ]
             }, 
             keywords: { main: ['BEAST', 'CHAOS', 'NURGLE', 'CHAOS SPAWN'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'foetid_bloat_drone', name: 'Foetid Bloat-drone', 
+            id: 'foetid_bloat_drone', name: 'Foetid Bloat-drone (120pts)', 
             stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' }, 
             wargear: [ 
-                { name: 'Heavy blight launcher', type: 'Ranged', profiles: [ { range: '36"', a: '6', bs: '3+', s: '8', ap: '-2', d: '2', abilities: '[<span class="kw-spec">BLAST</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, 
+                { name: 'Heavy blight launcher', type: 'Ranged', profiles: [ { range: '36"', a: 'D6+2', bs: '3+', s: '10', ap: '-2', d: '3', abilities: '[<span class="kw-spec">BLAST</span>, <span class="kw-pos">LETHAL HITS</span>]' } ]}, 
                 { name: 'Plague probe', type: 'Melee', profiles: [ { range: 'Melee', a: '3', ws: '3+', s: '6', ap: '-1', d: '1', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' } ]} 
             ], 
             abilities: { 
                 core: [{ name: 'Deadly Demise D3', desc: 'On 5+, explodes (3" / D3 MW).', phases: ['any'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
-                unit: [ { name: 'Hovering Death', desc: 'This model is eligible to shoot and declare a charge in a turn in which it Fell Back.', phases: ['my_movement', 'my_charge'] } ] 
+                unit: [ { name: 'Explosive Blight', desc: 'Shooting Phase: If model destroys a unit, roll D6 (+1 if Afflicted). On 5+, all enemies within 6" become <strong>AFFLICTED</strong>.', phases: ['my_shooting'] } ] 
             }, 
             keywords: { main: ['VEHICLE', 'FLY', 'CHAOS', 'NURGLE', 'DAEMON', 'FOETID BLOAT-DRONE'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'plagueburst_crawler', name: 'Plagueburst Crawler', 
+            id: 'plagueburst_crawler', name: 'Plagueburst Crawler (210pts)', 
             stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' }, 
             wargear: [ 
                 { name: 'Entropy cannon', type: 'Ranged', profiles: [ { range: '24"', a: '1', bs: '3+', s: '10', ap: '-3', d: 'D6+1', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' } ]}, 
@@ -282,22 +295,22 @@
             abilities: { 
                 core: [{ name: 'Deadly Demise D3', desc: 'On 5+, explodes (3" / D3 MW).', phases: ['any'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
-                unit: [ { name: 'Spore-laced Shock Waves', desc: 'Mortar attack: Roll D6 for target and units within 3". +1 if Afflicted. On 6+, target takes D3 MW after shooting resolves.', phases: ['my_shooting'] } ], 
+                unit: [ { name: 'Spore-laced Shock Waves', desc: 'Mortar attack: Roll D6 for target and units within 3". +1 if <strong>AFFLICTED</strong>. On 6+, unit takes D3 MW after shooting resolves.', phases: ['my_shooting'] } ], 
                 damaged: '1-4 wounds remaining: -1 to Hit.' 
             }, 
             keywords: { main: ['VEHICLE', 'CHAOS', 'NURGLE', 'DAEMON', 'PLAGUEBURST CRAWLER'], faction: ['DEATH GUARD'] } 
         },
         { 
-            id: 'poxwalkers', name: 'Poxwalkers', 
+            id: 'poxwalkers', name: 'Poxwalkers (65pts)', 
             stats: { M: '4"', T: '4', Sv: '7+', W: '1', Ld: '8+', OC: '1', invuln: '6+' }, 
             wargear: [ 
                 { name: 'Improvised weapon', type: 'Melee', profiles: [ { range: 'Melee', a: '2', ws: '5+', s: '3', ap: '0', d: '1', abilities: '[<span class="kw-pos">LETHAL HITS</span>]' } ]} 
             ], 
             abilities: { 
-                core: [{ name: 'Feel No Pain 5+', phases: ['any'] }], 
+                core: [{ name: 'Feel No Pain 5+', phases: ['any'] }, { name: 'Infiltrators', phases: ['pregame'] }], 
                 faction: [{ name: "Nurgle's Gift (Aura)", desc: 'Worsen enemy Leadership and OC by 1 within Contagion Range.', phases: ['aura'] }], 
                 unit: [ 
-                    { name: 'Curse of the Walking Pox', desc: 'Each time this unit destroys an enemy INFANTRY model in Fight phase, return 1 destroyed Poxwalker model to this unit.', phases: ['fight'] }
+                    { name: 'Curse of the Walking Pox', desc: 'Fight Phase: Each time you destroy an enemy INFANTRY model, return 1 destroyed Poxwalker to unit. (Includes Typhus kills).', phases: ['fight'] }
                 ]
             }, 
             keywords: { main: ['INFANTRY', 'CHAOS', 'NURGLE', 'POXWALKERS'], faction: ['DEATH GUARD'] } 
@@ -332,7 +345,7 @@
         const currentPhaseId = gamePhases[currentPhaseIndex].id;
         if (ability.phases.includes(currentPhaseId)) return 'phase-highlight';
         if (ability.phases.includes('aura')) return 'aura-highlight';
-        if (ability.name.includes('Enhancement')) return 'enhancement-highlight'; // Highlight enhancements always
+        if (ability.name.includes('Enhancement')) return 'enhancement-highlight'; 
         if (ability.phases.includes('any') && (ability.name.includes("Feel No Pain") && (currentPhaseId.includes("shooting") || currentPhaseId.includes("fight")))) {
             return 'phase-highlight';
         }
@@ -384,7 +397,7 @@
 
     function updateUnitCount(count) {
         const unit = codexData.find(u => u.id === selectedUnitId);
-        if (!unit) return;
+        if (!unit || !unit.stats) return; // Rules have no stats
         const maxWounds = parseInt(unit.stats.W);
         woundTrackers = Array.from({ length: count }, () => ({ current: maxWounds, max: maxWounds }));
         renderWoundTrackers();
@@ -394,14 +407,13 @@
     function displayUnitDetails(unitId, isPhaseUpdate = false) {
         if (!isPhaseUpdate) {
             selectedUnitId = unitId;
-            unitCountWrapperEl.style.display = 'block';
+            unitCountWrapperEl.style.display = (unitId === 'rules') ? 'none' : 'block';
             unitCountSelectorEl.value = 1;
         }
         const unit = codexData.find(u => u.id === unitId);
         if (!unit) return;
 
-        if (!isPhaseUpdate) {
-            // Default logic for unit counts based on your list size
+        if (!isPhaseUpdate && unitId !== 'rules') {
             let defaultCount = 1;
             if (unit.id === 'deathshroud_terminators') defaultCount = 3;
             if (unit.id === 'poxwalkers') defaultCount = 10;
@@ -412,6 +424,16 @@
         }
 
         unitNameDisplayEl.innerHTML = unit.name;
+        
+        if (unitId === 'rules') {
+             let html = `<div class="details-column" style="max-width: 800px; margin: 0 auto;"><div class="info-card"><h3 class="section-title">Army Rules</h3>`;
+             unit.abilities.faction.forEach(a => {
+                 html += `<div class="item collapsible expanded ${getHighlightClass(a)}"><strong class="ability-name">${a.name}</strong><div class="ability-description" style="display:block"><p>${a.desc}</p></div></div>`;
+             });
+             html += `</div></div>`;
+             unitDetailsEl.innerHTML = html;
+             return;
+        }
 
         let col1HTML = `<div class="details-column"><div class="info-card"><div style="display: flex; align-items: center;"><table class="stats-table"><thead><tr><th>M</th><th>T</th><th>Sv</th><th>W</th><th>Ld</th><th>OC</th></tr></thead><tbody><tr><td>${unit.stats.M}</td><td>${unit.stats.T}</td><td>${unit.stats.Sv}</td><td>${unit.stats.W}</td><td>${unit.stats.Ld}</td><td>${unit.stats.OC}</td></tr></tbody></table>${unit.stats.invuln ? `<div class="invuln-save"><strong>${unit.stats.invuln}</strong><div>INVULN</div></div>` : ''}</div></div><div class="info-card"><h3 class="section-title">Wound Tracker</h3><div id="multi-wound-tracker-container"></div></div>`;
         const rangedWeapons = unit.wargear.filter(w => w.type === 'Ranged');
@@ -505,8 +527,16 @@
     }
 
     function populateUnitList() {
-        unitListEl.innerHTML = '<h2>The Chosen</h2>';
-        codexData.sort((a, b) => a.name.localeCompare(b.name)).forEach(unit => {
+        unitListEl.innerHTML = '<h2>Death Lord\'s Chosen</h2>';
+        // Rules button first
+        const rulesBtn = document.createElement('button');
+        rulesBtn.innerText = "☠️ ARMY RULES";
+        rulesBtn.className = 'unit-selector rules-btn';
+        rulesBtn.dataset.unitId = 'rules';
+        rulesBtn.onclick = () => displayUnitDetails('rules');
+        unitListEl.appendChild(rulesBtn);
+
+        codexData.filter(u => u.id !== 'rules').sort((a, b) => a.name.localeCompare(b.name)).forEach(unit => {
             const button = document.createElement('button');
             button.innerText = unit.name; button.className = 'unit-selector';
             button.dataset.unitId = unit.id; button.onclick = () => displayUnitDetails(unit.id);
@@ -529,7 +559,7 @@
     });
 
     populateUnitList();
-    if (codexData.length > 0) { displayUnitDetails(codexData[0].id); }
+    displayUnitDetails('rules'); // Show rules on load
 </script>
 
 </body>
