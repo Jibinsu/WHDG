@@ -12,137 +12,195 @@
 
     <style>
         :root {
-            --bg-color: #eaedf0; --surface-color: #ffffff; --text-color: #1c1e21;
-            --header-color: #2c3e50; --accent-color: #2980b9; --border-color: #cfd8dc;
-            --highlight-color: #27ae60; --alert-color: #c0392b;
-            --console-bg: #1a1a1a; --console-text: #f1f1f1;
-            --stat-bg: #f1f2f6;
-            --strat-dg: #27ae60; --strat-core: #7f8c8d;
+            /* Light Mode (Default) */
+            --bg-color: #f0f2f5;
+            --surface-color: #ffffff;
+            --text-color: #1c1e21;
+            --text-sub: #606770;
+            --header-bg: #2c3e50;
+            --header-text: #ffffff;
+            --accent-color: #2980b9;
+            --border-color: #dfe3e8;
+            --console-bg: #1a1a1a;
+            --stat-bg: #f8f9fa;
+            --stat-header: #e9ecef;
+            --highlight-bg: #e8f5e9;
+            --highlight-border: #c8e6c9;
+            
+            /* Keywords */
+            --kw-pos: #2e7d32;
+            --kw-neg: #c62828;
+            --kw-spec: #6a1b9a;
+
+            /* Stratagem Pills */
+            --strat-dg: #27ae60;
+            --strat-core: #7f8c8d;
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-sub: #a0a0a0;
+            --header-bg: #000000;
+            --header-text: #27ae60;
+            --accent-color: #27ae60;
+            --border-color: #333333;
+            --console-bg: #000000;
+            --stat-bg: #2c2c2c;
+            --stat-header: #3a3a3a;
+            --highlight-bg: #1b3a1e;
+            --highlight-border: #2e7d32;
+            
+            --kw-pos: #66bb6a;
+            --kw-neg: #ef5350;
+            --kw-spec: #ab47bc;
         }
 
         html, body {
             height: 100%; margin: 0; overflow: hidden; background-color: var(--bg-color);
             color: var(--text-color); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-size: 14px; line-height: 1.4; -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* --- Layout --- */
         #app-container { display: flex; flex-direction: column; height: 100%; }
 
-        /* --- Top Bar (Phase) --- */
+        /* --- Top Bar --- */
         #phase-tracker {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; background-color: var(--header-color); color: #fff;
-            height: 50px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;
+            padding: 0 15px; background-color: var(--header-bg); color: var(--header-text);
+            height: 55px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;
         }
         .phase-info { display: flex; flex-direction: column; }
         .turn-label { font-size: 0.65rem; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; }
-        #current-phase-name { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; }
+        #current-phase-name { font-size: 1.1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .header-controls { display: flex; gap: 10px; align-items: center; }
         
         #next-phase-btn {
             background-color: var(--accent-color); color: #fff; border: none;
-            padding: 6px 16px; border-radius: 20px; font-weight: 700; cursor: pointer;
-            font-size: 0.85rem; transition: background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;
+            font-size: 0.85rem; transition: all 0.2s;
         }
-        #next-phase-btn:active { transform: scale(0.95); }
+        
+        #theme-toggle {
+            background: transparent; border: 1px solid rgba(255,255,255,0.3); color: var(--header-text);
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
+            font-size: 1.2rem;
+        }
 
         /* --- Body (Split View) --- */
         #main-body { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
         
         /* Sidebar */
         #unit-list {
-            width: 260px; flex-shrink: 0; background-color: #dfe4ea; 
+            width: 260px; flex-shrink: 0; background-color: var(--stat-bg); 
             border-right: 1px solid var(--border-color); overflow-y: auto; padding: 10px;
-            padding-bottom: 120px; /* Space for footer */
+            padding-bottom: 130px;
         }
-        .group-label { font-size: 0.7rem; font-weight: 900; color: #7f8c8d; margin: 12px 0 4px 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .group-label { font-size: 0.7rem; font-weight: 900; color: var(--text-sub); margin: 15px 0 5px 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .unit-btn {
             display: block; width: 100%; padding: 12px 12px; margin-bottom: 6px;
-            background: #fff; border: 1px solid #b0b8be; border-radius: 8px;
-            text-align: left; font-weight: 700; color: #2c3e50; cursor: pointer;
-            font-size: 0.9rem; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px;
+            text-align: left; font-weight: 700; color: var(--text-color); cursor: pointer;
+            font-size: 0.9rem; position: relative; transition: all 0.2s;
         }
-        .unit-btn.active { background-color: var(--header-color); color: #fff; border-color: var(--header-color); transform: translateX(4px); }
-        .unit-btn.rules-btn { border-left: 5px solid var(--alert-color); }
-        .unit-btn.combo-btn { border-left: 5px solid var(--highlight-color); }
+        .unit-btn.active { background-color: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: translateX(4px); }
+        .unit-btn.rules-btn { border-left: 5px solid var(--highlight-border); }
+        .unit-btn.combo-btn { border-left: 5px solid var(--accent-color); }
 
         /* Content Area */
         #unit-details-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-color); }
-        #content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; display: flex; flex-direction: column; gap: 15px; }
+        #content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 130px; display: flex; flex-direction: column; gap: 15px; }
 
         /* --- Stratagem Bar --- */
         #strat-bar {
-            background: #34495e; border-top: 1px solid #2c3e50;
+            background: var(--header-bg); border-top: 1px solid rgba(255,255,255,0.1);
             padding: 8px 10px; display: flex; gap: 10px; overflow-x: auto;
             white-space: nowrap; flex-shrink: 0; height: 50px; align-items: center;
             -webkit-overflow-scrolling: touch;
         }
-        /* Hide scrollbar */
         #strat-bar::-webkit-scrollbar { display: none; }
         .strat-pill {
             color: #fff; padding: 6px 12px; border-radius: 6px;
-            font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0; cursor: pointer;
+            font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3); flex-shrink: 0; cursor: pointer;
         }
         .strat-pill.dg { background: var(--strat-dg); }
         .strat-pill.core { background: var(--strat-core); }
 
         /* --- Bottom Console (Sticky) --- */
         #command-console {
-            height: 60px; background-color: var(--console-bg); color: var(--console-text);
+            height: 65px; background-color: var(--console-bg); color: #f1f1f1;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); flex-shrink: 0; z-index: 20;
+            padding: 0 20px; box-shadow: 0 -2px 15px rgba(0,0,0,0.5); flex-shrink: 0; z-index: 20;
         }
-        .console-group { display: flex; align-items: center; gap: 15px; }
+        .console-group { display: flex; align-items: center; gap: 20px; }
         .resource-box { display: flex; flex-direction: column; align-items: center; min-width: 50px; }
         .res-label { font-size: 0.6rem; color: #888; font-weight: bold; letter-spacing: 1px; }
-        .res-val { font-size: 1.5rem; font-weight: 900; line-height: 1; color: var(--accent-color); }
-        .res-controls { display: flex; gap: 5px; }
+        .res-val { font-size: 1.6rem; font-weight: 900; line-height: 1; color: var(--accent-color); }
+        .res-controls { display: flex; gap: 8px; margin-top: 2px; }
         .res-btn {
-            background: #333; color: #fff; border: 1px solid #555; width: 24px; height: 24px;
-            border-radius: 4px; font-weight: bold; cursor: pointer; display: grid; place-items: center;
+            background: #333; color: #fff; border: 1px solid #555; width: 28px; height: 28px;
+            border-radius: 6px; font-weight: bold; cursor: pointer; display: grid; place-items: center;
         }
-        .reset-btn { font-size: 0.7rem; color: #e74c3c; background: transparent; border: 1px solid #e74c3c; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .reset-btn { font-size: 0.7rem; color: #e74c3c; background: transparent; border: 1px solid #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
         /* --- Cards & Components --- */
-        .card { background: #fff; border-radius: 8px; padding: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card { background: var(--surface-color); border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        .tactics-card { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; }
+        .tactics-card { background-color: var(--highlight-bg); border: 1px solid var(--highlight-border); color: var(--text-color); }
+        .tactics-card h3 { margin-top: 0; color: var(--kw-pos); border-bottom: 1px solid var(--highlight-border); padding-bottom: 5px; margin-bottom: 10px; font-size: 1rem; }
+        .tactics-detail { font-size: 0.9rem; line-height: 1.5; }
+
         .split-view { display: flex; gap: 15px; flex-wrap: wrap; }
         .split-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 10px; }
 
-        .stats-row { display: flex; gap: 1px; background: var(--header-color); border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
-        .stat-box { flex: 1; background: #fff; text-align: center; padding: 3px 0; }
-        .stat-label { font-size: 0.6rem; font-weight: 800; color: #95a5a6; display: block; }
-        .stat-val { font-size: 1rem; font-weight: 800; color: #2c3e50; }
-        .invuln-box { background: var(--header-color); } .invuln-box .stat-val { color: #fff; }
+        /* Unit Card Headers */
+        .unit-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px; align-items: center; }
+        .unit-title { color: var(--accent-color); font-size: 1.1rem; font-weight: 900; }
+        .unit-role { font-size: 0.7rem; background: var(--stat-bg); padding: 4px 8px; border-radius: 4px; font-weight: bold; color: var(--text-sub); }
 
-        .wound-control { display: flex; align-items: center; justify-content: space-between; background: var(--stat-bg); padding: 5px 10px; border-radius: 6px; margin-bottom: 4px; }
-        .wound-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #bdc3c7; background: #fff; font-weight: bold; cursor: pointer; display: grid; place-items: center; font-size: 1.2rem; touch-action: manipulation; }
-        .wound-val { font-size: 1.2rem; font-weight: 800; width: 35px; text-align: center; }
-        
-        .weapon-row { margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 6px; }
-        .weapon-header { display: flex; justify-content: space-between; align-items: baseline; }
-        .weapon-name { font-weight: 800; color: #2c3e50; font-size: 0.9rem; }
-        .profile-table { width: 100%; font-size: 0.85rem; text-align: center; border-collapse: collapse; border: 1px solid #eee; margin-top: 2px; }
-        .profile-table th { background: #f8f9fa; color: #7f8c8d; padding: 2px; font-size: 0.65rem; }
-        .profile-table td { padding: 4px; font-weight: 600; color: #2c3e50; }
+        /* Stats */
+        .stats-row { display: flex; gap: 1px; background: var(--border-color); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+        .stat-box { flex: 1; background: var(--surface-color); text-align: center; padding: 6px 0; }
+        .stat-label { font-size: 0.6rem; font-weight: 800; color: var(--text-sub); display: block; }
+        .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--text-color); }
+        .invuln-box { background: var(--header-bg); } .invuln-box .stat-val { color: #fff; }
 
-        .ability { margin-bottom: 6px; padding-left: 8px; border-left: 3px solid #bdc3c7; }
-        .ability-name { font-weight: 700; color: #34495e; font-size: 0.85rem; }
-        .ability-desc { font-size: 0.8rem; color: #576574; }
+        /* Wounds */
+        .wound-control { display: flex; align-items: center; justify-content: space-between; background: var(--stat-bg); padding: 6px 10px; border-radius: 6px; margin-bottom: 5px; border: 1px solid var(--border-color); }
+        .wound-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-color); font-weight: bold; cursor: pointer; display: grid; place-items: center; font-size: 1.2rem; touch-action: manipulation; }
+        .wound-val { font-size: 1.3rem; font-weight: 800; width: 40px; text-align: center; color: var(--text-color); }
         
-        .active-phase { border-color: var(--highlight-color); background: #f0fff4; }
-        .enhancement { border-color: #9b59b6; background: #f3e5f5; }
-        .deadly-demise { color: #c0392b; font-weight: bold; display: none; text-align: center; font-size: 0.8rem; margin-top: 5px; animation: pulse 1s infinite; }
+        /* Weapons */
+        .weapon-row { margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+        .weapon-name { font-weight: 800; color: var(--text-color); font-size: 0.95rem; margin-bottom: 4px; display: block;}
+        .profile-table { width: 100%; font-size: 0.9rem; text-align: center; border-collapse: collapse; border: 1px solid var(--border-color); margin-top: 4px; }
+        .profile-table th { background: var(--stat-header); color: var(--text-sub); padding: 4px; font-size: 0.7rem; text-transform: uppercase; }
+        .profile-table td { padding: 6px; font-weight: 600; color: var(--text-color); border: 1px solid var(--border-color); }
+
+        /* Abilities */
+        .ability { margin-bottom: 8px; padding-left: 10px; border-left: 4px solid var(--border-color); }
+        .ability-name { font-weight: 800; color: var(--text-color); font-size: 0.9rem; }
+        .ability-desc { font-size: 0.85rem; color: var(--text-sub); margin-top: 2px; }
+        
+        .active-phase { border-color: var(--highlight-border); background: var(--highlight-bg); }
+        .enhancement { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
+        .deadly-demise { color: var(--kw-neg); font-weight: 900; display: none; text-align: center; font-size: 0.85rem; margin-top: 8px; animation: pulse 1s infinite; text-transform: uppercase; letter-spacing: 1px; }
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         /* Keywords Styling */
-        .k-lethal, .k-sus { color: #27ae60; } .k-anti, .k-dev { color: #c0392b; } .k-blast { color: #8e44ad; }
+        .k-lethal, .k-sus { color: var(--kw-pos); font-weight: 700; } 
+        .k-anti, .k-dev { color: var(--kw-neg); font-weight: 700; } 
+        .k-blast { color: var(--kw-spec); font-weight: 700; }
     </style>
 </head>
-<body>
+<body class="">
 
 <div id="app-container">
     <div id="phase-tracker">
@@ -150,7 +208,10 @@
             <span id="turn-display" class="turn-label">SETUP</span>
             <div id="current-phase-name">DEPLOYMENT</div>
         </div>
-        <button id="next-phase-btn">START GAME</button>
+        <div class="header-controls">
+            <button id="theme-toggle" onclick="toggleTheme()">◐</button>
+            <button id="next-phase-btn">START GAME</button>
+        </div>
     </div>
 
     <div id="main-body">
@@ -177,7 +238,7 @@
                     <div class="res-btn" onclick="modRes('cp', 1)">+</div>
                 </div>
             </div>
-            <div class="resource-box" style="margin-left: 10px; border-left: 1px solid #333; padding-left: 15px;">
+            <div class="resource-box" style="margin-left: 10px; border-left: 1px solid #555; padding-left: 15px;">
                 <span class="res-label">VP</span>
                 <span class="res-val" id="vp-val" style="color: #f1c40f;">0</span>
                 <div class="res-controls">
@@ -200,9 +261,9 @@
                 { name: 'Manreaper (Sweep)', type: 'Melee', stats: { range: 'Melee', a: '10', ws: '2+', s: '6', ap: '-1', d: '1' }, kw: 'LETHAL HITS' }
             ],
             abilities: [
-                { name: 'Vector of Disease', desc: 'Leading Unit: Melee weapons get <strong>[SUSTAINED HITS 1]</strong> and <strong>[LANCE]</strong>.', phases: ['fight'] },
-                { name: 'Unholy Resilience', desc: 'On death: Roll D6. 2+ return with 3 Wounds.', phases: ['any'] },
-                { name: 'ENHANCEMENT: Warprot Talisman', desc: 'End of Opp Turn: If not in Engagement, enter Strategic Reserves.', phases: ['opponent_end'] }
+                { name: 'Vector of Disease', desc: 'While this model is leading a unit, melee weapons equipped by models in that unit have the <strong>[SUSTAINED HITS 1]</strong> and <strong>[LANCE]</strong> abilities.', phases: ['fight'] },
+                { name: 'Unholy Resilience', desc: 'The first time this model is destroyed, roll one D6 at the end of the phase. On a 2+, set this model back up on the battlefield, as close as possible to where it was destroyed and not within Engagement Range of any enemy units, with 3 wounds remaining.', phases: ['any'] },
+                { name: 'ENHANCEMENT: Warprot Talisman', desc: 'Once per battle, at the end of your opponent’s turn, if the bearer’s unit is not within Engagement Range of one or more enemy units, you can remove it from the battlefield and place it into Strategic Reserves.', phases: ['opponent_end'] }
             ]
         },
         lov: {
@@ -213,9 +274,9 @@
                 { name: 'Power Fist', type: 'Melee', stats: { range: 'Melee', a: '5', ws: '2+', s: '8', ap: '-2', d: '2' }, kw: 'LETHAL HITS' }
             ],
             abilities: [
-                { name: 'Virulent Aura', desc: 'Leading Unit: Reroll <strong>Wound rolls</strong> for ranged attacks.', phases: ['shooting', 'opp_shooting'] },
-                { name: 'Blight Bombardment', desc: 'Start of Shooting: Select visible enemy < 30". Friendly Blast weapons reroll Hit. Others reroll 1s.', phases: ['shooting'] },
-                { name: 'ENHANCEMENT: Helm of Fly King', desc: 'Leading Unit: Cannot be targeted by ranged unless attacker is within 18".', phases: ['opp_shooting'] }
+                { name: 'Virulent Aura', desc: 'While this model is leading a unit, each time a model in that unit makes a ranged attack, you can re-roll the Wound roll.', phases: ['shooting', 'opp_shooting'] },
+                { name: 'Blight Bombardment', desc: 'At the start of your Shooting phase, select one enemy unit within 30" of and visible to this model. Until the end of the phase, friendly DEATH GUARD Blast weapons re-roll the Hit roll. Other friendly DEATH GUARD weapons re-roll a Hit roll of 1.', phases: ['shooting'] },
+                { name: 'ENHANCEMENT: Helm of Fly King', desc: 'While the bearer is leading a unit, models in that unit cannot be targeted by ranged attacks unless the attacking model is within 18".', phases: ['opp_shooting'] }
             ]
         },
         typhus: {
@@ -226,8 +287,8 @@
                 { name: 'Lakrimae (Sweep)', type: 'Melee', stats: { range: 'Melee', a: '12', ws: '2+', s: '6', ap: '-1', d: '1' }, kw: 'LETHAL HITS' }
             ],
             abilities: [
-                { name: 'Destroyer Hive', desc: 'Leading Unit: -1 to be Hit in Melee.', phases: ['fight', 'opp_fight'] },
-                { name: 'Eater Plague', desc: 'Shooting Phase: Select visible enemy < 18". D6: 1=You take D3 MW. 2-5=Enemy takes D6 MW. 6=Enemy takes D3+3 MW.', phases: ['shooting'] }
+                { name: 'Destroyer Hive', desc: 'While this model is leading a unit, each time a melee attack targets that unit, subtract 1 from the Hit roll.', phases: ['fight', 'opp_fight'] },
+                { name: 'Eater Plague (Psychic)', desc: 'In your Shooting phase, select one enemy unit within 18" of and visible to this PSYKER. Roll one D6: <br>1: This PSYKER’s unit suffers D3 mortal wounds.<br>2-5: That enemy unit suffers D6 mortal wounds.<br>6: That enemy unit suffers D3+3 mortal wounds.', phases: ['shooting'] }
             ]
         },
         deathshroud: {
@@ -239,9 +300,9 @@
                 { name: 'Manreaper (Sweep)', type: 'Melee', stats: { range: 'Melee', a: '8', ws: '3+', s: '4', ap: '-1', d: '1' }, kw: 'LETHAL HITS' }
             ],
             abilities: [
-                { name: 'Silent Bodyguard', desc: 'Leader gets Feel No Pain 4+.', phases: ['any'] },
-                { name: 'Death Approaches', desc: 'Deep Strike > 6" from Afflicted units.', phases: ['movement'] },
-                { name: 'Icon of Despair', desc: 'Aura: Enemy within 6" -1 Leadership.', phases: ['aura'] }
+                { name: 'Silent Bodyguard', desc: 'While a CHARACTER model is leading this unit, that CHARACTER model has the Feel No Pain 4+ ability.', phases: ['any'] },
+                { name: 'Death Approaches', desc: 'In your Movement phase, when this unit is set up on the battlefield using the Deep Strike ability, it can be set up anywhere on the battlefield that is more than 6" horizontally away from all Afflicted enemy units.', phases: ['movement'] },
+                { name: 'Icon of Despair', desc: 'While an enemy unit is within 6" of the bearer, worsen the Leadership characteristic of models in that unit by 1.', phases: ['aura'] }
             ]
         },
         poxwalkers: {
@@ -249,7 +310,7 @@
             stats: { M: '4"', T: '4', Sv: '7+', W: '1', Ld: '8+', OC: '1', invuln: '6+' },
             wargear: [ { name: 'Improvised Weapon', type: 'Melee', stats: { range: 'Melee', a: '2', ws: '5+', s: '3', ap: '0', d: '1' }, kw: 'LETHAL HITS' } ],
             abilities: [
-                { name: 'Curse of the Walking Pox', desc: 'Fight Phase: Kills return 1 model (Typhus kills count!).', phases: ['fight'] },
+                { name: 'Curse of the Walking Pox', desc: 'Each time a POXWALKER model in this unit makes an attack that destroys an enemy model (excluding MONSTER and VEHICLE models), after this unit has resolved its attacks, you can return one destroyed POXWALKER model to this unit. (Typhus kills count).', phases: ['fight'] },
                 { name: 'Feel No Pain 5+', desc: 'Core ability.', phases: ['any'] }
             ]
         },
@@ -262,26 +323,26 @@
                 { name: 'Combi-bolter', type: 'Ranged', stats: { range: '24"', a: '2', bs: '3+', s: '4', ap: '0', d: '1' }, kw: 'LETHAL, RAPID FIRE 2' }
             ],
             abilities: [
-                { name: 'Blistering Fusillade', desc: '+1 S and +1 AP vs Afflicted targets.', phases: ['shooting', 'opp_shooting'] }
+                { name: 'Blistering Fusillade', desc: 'If this unit has a Starting Strength of 5 or more, or if a CHARACTER is leading this unit, then each time a model in this unit makes a ranged attack that targets an Afflicted unit, improve the Strength and Armour Penetration characteristics of that attack by 1.', phases: ['shooting', 'opp_shooting'] }
             ]
         },
         spawn: {
             name: "Chaos Spawn",
             stats: { M: '8"', T: '5', Sv: '4+', W: '4', Ld: '7+', OC: '1', invuln: '5+' },
             wargear: [ { name: 'Hideous Mutations', type: 'Melee', stats: { range: 'Melee', a: 'D6+2', ws: '4+', s: '5', ap: '-1', d: '2' }, kw: '' } ],
-            abilities: [ { name: 'Lethal Ichor', desc: 'Fight Phase: After being hit, roll 1D6 per enemy unit. 4+ = 1 MW.', phases: ['fight', 'opp_fight'] }, { name: 'FNP 5+', desc: '', phases: ['any'] } ]
+            abilities: [ { name: 'Lethal Ichor', desc: 'Each time a melee attack is allocated to a model in this unit, after the attacking unit has finished making its attacks, roll one D6 (to a maximum of six D6 per attacking unit): for each 4+, the attacking unit suffers 1 mortal wound.', phases: ['fight', 'opp_fight'] }, { name: 'FNP 5+', desc: '', phases: ['any'] } ]
         },
         drone: {
             name: "Foetid Bloat-drone",
             stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' },
             wargear: [ { name: 'Heavy Blight Launcher', type: 'Ranged', stats: { range: '36"', a: 'D6+2', bs: '3+', s: '10', ap: '-2', d: '3' }, kw: 'BLAST, LETHAL HITS' } ],
-            abilities: [ { name: 'Explosive Blight', desc: 'Kills spread Affliction to all units within 6" on a 5+.', phases: ['shooting'] }, { name: 'Deadly Demise D3', desc: '', phases: ['any'] } ]
+            abilities: [ { name: 'Explosive Blight', desc: 'In your Shooting phase, each time this model makes an attack that destroys an enemy unit, before removing the last model in that unit from play, roll a D6, adding 1 to the result if that unit is Afflicted: on a 5+, each enemy unit within 6" of that model is Afflicted until the start of your next turn.', phases: ['shooting'] }, { name: 'Deadly Demise D3', desc: '', phases: ['any'] } ]
         },
         pbc: {
             name: "Plagueburst Crawler",
             stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' },
             wargear: [ { name: 'Plagueburst Mortar', type: 'Ranged', stats: { range: '48"', a: 'D6+3', bs: '3+', s: '8', ap: '-1', d: '2' }, kw: 'BLAST, INDIRECT, LETHAL' }, { name: 'Entropy Cannon', type: 'Ranged', stats: { range: '36"', a: '1', bs: '3+', s: '10', ap: '-3', d: 'D6+1' }, kw: 'LETHAL HITS' } ],
-            abilities: [ { name: 'Spore-laced Shock Waves', desc: 'Mortar hits force Battleshock. 6+ (or 5+ if Afflicted) causes D3 MW.', phases: ['shooting'] } ]
+            abilities: [ { name: 'Spore-laced Shock Waves', desc: 'In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted. On a 6+, the unit being rolled for is struck by spores; after resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.', phases: ['shooting'] } ]
         }
     };
 
@@ -292,37 +353,52 @@
             content: `
                 <div class="card tactics-card">
                     <h3>Skullsquirm Blight (Army Rule)</h3>
-                    <p><strong>Effect:</strong> Enemy units in Contagion Range are <strong>Afflicted</strong> (-1 Toughness).</p>
-                    <p><strong>Debuff:</strong> Afflicted units suffer <strong>-1 to Hit</strong>.</p>
-                    <div style="margin-top:10px; background:rgba(0,0,0,0.05); padding:5px; border-radius:4px; text-align:center;">
-                        <strong>CONTAGION RANGE</strong><br>
-                        T1: 3" | T2: 6" | T3+: 9"
+                    <div class="tactics-detail">
+                    <p><strong>Effect:</strong> If your Army Faction is DEATH GUARD, while an enemy unit is within Contagion Range of one or more DEATH GUARD models from your army, it is <strong>Afflicted</strong>.</p>
+                    <p><strong>Debuff:</strong> While an enemy unit is Afflicted, subtract 1 from the Toughness characteristic of models in that unit.</p>
+                    <p><strong>Skullsquirm Effect:</strong> Each time a model in this unit makes an attack, subtract 1 from the Hit roll.</p>
+                    <div style="margin-top:15px; background:rgba(0,0,0,0.05); padding:8px; border-radius:4px; text-align:center; font-weight:bold;">
+                        CONTAGION RANGE<br>
+                        Battle Round 1: 3"<br>
+                        Battle Round 2: 6"<br>
+                        Battle Round 3+: 9"
+                    </div>
                     </div>
                 </div>
-                <div class="card tactics-card" style="margin-top:10px;">
+                <div class="card tactics-card" style="margin-top:15px;">
                     <h3>Deadly Vectors (Detachment)</h3>
-                    <p><strong>Timing:</strong> Opponent's Command Phase.</p>
-                    <p><strong>Action:</strong> Roll 2D6 for every Afflicted enemy unit.</p>
-                    <p><strong>Effect:</strong> If roll is 6 or less (subtract 1 if Below Half-strength), unit takes <strong>D3 Mortal Wounds</strong>.</p>
+                    <div class="tactics-detail">
+                    <p>In your opponent’s Command phase, roll 2D6 for each Afflicted enemy unit, subtracting 1 from the result if that unit is Below Half-strength.</p>
+                    <p>If the result is <strong>6 or less</strong>, that enemy unit suffers <strong>D3 mortal wounds</strong>.</p>
+                    </div>
                 </div>
             `
         },
         {
             id: 'tf_executioner', name: '⚔️ EXECUTIONER BLOCK', group: 'Task Forces',
             type: 'combo',
-            tactics: { title: 'MELEE BLENDER', desc: 'LoC gives [LANCE] & [SUSTAINED]. Scythes S8 wound T4 on 2+, T12 on 4+.' },
+            tactics: {
+                title: 'THE MELEE BLENDER',
+                desc: '<strong>The Interaction:</strong> The Lord of Contagion grants the unit <strong>[Vector of Disease]</strong>. This provides <strong>[Sustained Hits 1]</strong> (Exploding 6s) and <strong>[Lance]</strong> (+1 to Wound on the charge).<br><br><strong>The Math:</strong> Deathshroud Scythes are Strength 8.<br>- With Lance, they become S8 +1 to Wound.<br>- Wound T4 (Marines) on 2+.<br>- Wound T5-T8 (Elites) on 2+.<br>- Wound T9-T15 (Tanks/Knights) on 4+.<br><br>Combined with 6 models (approx 25 attacks) + Sustained Hits, this unit mathematically destroys almost any target in one phase.'
+            },
             units: [ { profile: 'loc', count: 1, label: 'Warlord' }, { profile: 'deathshroud', count: 6, label: 'Bodyguard' } ]
         },
         {
             id: 'tf_spotter', name: '🎯 ARTILLERY SPOTTER', group: 'Task Forces',
             type: 'combo',
-            tactics: { title: 'SPOT & OVERWATCH', desc: 'Use LoV "Blight Bombardment" to buff PBCs. Use Overwatch with Anti-Infantry 4+ Gauntlets (Reroll Wounds).' },
+            tactics: {
+                title: 'SPOT & OVERWATCH',
+                desc: '<strong>Spotting:</strong> In your Shooting Phase, use the LoV ability <strong>Blight Bombardment</strong> first. Select a visible enemy within 30". Your Plagueburst Crawlers (and all Blast weapons) now <strong>re-roll Hits</strong> against that target.<br><br><strong>Overwatch Threat:</strong> The LoV grants <strong>Re-roll Wounds</strong> to his unit. Deathshroud Gauntlets are <strong>Anti-Infantry 4+</strong>. If Infantry move within 12", fire Overwatch. You hit on 6s, but you auto-wound on 4+ (Criticals) and re-roll failed wounds. This melts infantry.'
+            },
             units: [ { profile: 'lov', count: 1, label: 'Leader' }, { profile: 'deathshroud', count: 3, label: 'Bodyguard' } ]
         },
         {
             id: 'tf_tarpit', name: '🧟 THE TAR PIT', group: 'Task Forces',
             type: 'combo',
-            tactics: { title: 'RESURRECTION LOOP', desc: 'Typhus Shooting + Fighting returns Poxwalkers. Poxwalker kills return Poxwalkers.' },
+            tactics: {
+                title: 'THE RESURRECTION LOOP',
+                desc: '<strong>The Loop:</strong><br>1. In your Shooting Phase, Typhus uses <strong>Eater Plague</strong>. If he kills models, use <strong>Curse of the Walking Pox</strong> to return destroyed Poxwalkers.<br>2. In the Fight Phase, Poxwalkers attack. Kills return Poxwalkers.<br>3. Typhus attacks. Kills return Poxwalkers.<br><br><strong>Durability:</strong> Typhus gives the unit -1 to be Hit in Melee. They have FNP 5+.'
+            },
             units: [ { profile: 'typhus', count: 1, label: 'Leader' }, { profile: 'poxwalkers', count: 10, label: 'Bodyguard' } ]
         },
         { id: 'sq_blight', name: '🛡️ ANVIL (Blightlords)', group: 'Solo Operatives', type: 'single', profile: 'blightlords', count: 5 },
@@ -344,57 +420,58 @@
         { id: 'opponent_end', label: 'End Opp Turn' }
     ];
 
-    // --- 2. STRATAGEMS (UPDATED) ---
+    // --- 2. STRATAGEMS (OFFICIAL WORDING) ---
     const STRATAGEMS = {
         command: [
-            { name: "Blooming Pestilence (1CP)", desc: "WHEN: Command Phase.\nTARGET: One DG Unit.\nEFFECT: Aura ranges +3 inches.", type: 'dg' },
-            { name: "Signal Pox (1CP)", desc: "WHEN: Command Phase.\nTARGET: One visible enemy unit within 18 inches.\nEFFECT: Unit becomes AFFLICTED.", type: 'dg' },
-            { name: "Command Re-roll (1CP)", desc: "WHEN: Any phase.\nEFFECT: Re-roll 1 die.", type: 'core' },
-            { name: "New Orders (1CP)", desc: "WHEN: Command Phase.\nEFFECT: Unit holds objective if moving away.", type: 'core' },
-            { name: "Insane Bravery (1CP)", desc: "WHEN: Battleshock.\nEFFECT: Unit automatically passes.", type: 'core' }
+            { name: "Blooming Pestilence (1CP)", desc: "<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One DEATH GUARD unit from your army.<br><strong>EFFECT:</strong> Until the start of your next Command phase, the Contagion Range of models in your unit is increased by 3\".", type: 'dg' },
+            { name: "Signal Pox (1CP)", desc: "<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One enemy unit that is visible to a DEATH GUARD model from your army.<br><strong>EFFECT:</strong> Until the start of your next Command phase, that enemy unit is Afflicted.", type: 'dg' },
+            { name: "Command Re-roll (1CP)", desc: "<strong>WHEN:</strong> Any phase, just after you have made a Hit roll, a Wound roll, a Damage roll, a saving throw, an Advance roll, a Charge roll, a Desperate Escape test, a Hazardous test, or just after you have rolled the dice to determine the number of attacks made with a weapon, for a unit from your army.<br><strong>EFFECT:</strong> You re-roll that roll, test or saving throw.", type: 'core' },
+            { name: "New Orders (1CP)", desc: "<strong>WHEN:</strong> Your Command phase.<br><strong>TARGET:</strong> One unit from your army that is within range of an objective marker you control.<br><strong>EFFECT:</strong> That objective marker remains under your control, even if you have no models within range of it, until your opponent controls it at the start or end of any turn.", type: 'core' },
+            { name: "Insane Bravery (1CP)", desc: "<strong>WHEN:</strong> Battle-shock step of your Command phase, just after you have failed a Battle-shock test for a unit from your army.<br><strong>TARGET:</strong> The unit that failed that test.<br><strong>EFFECT:</strong> Your unit is treated as having passed that test.", type: 'core' }
         ],
         movement: [
-            { name: "Blooming Pestilence (1CP)", desc: "WHEN: Command Phase.\nEFFECT: Aura ranges +3 inches.", type: 'dg' }
+            { name: "Blooming Pestilence (1CP)", desc: "<strong>WHEN:</strong> Your Command phase (Active during Movement).<br><strong>EFFECT:</strong> Aura ranges +3\".", type: 'dg' },
+             { name: "Rapid Ingress (1CP)", desc: "<strong>WHEN:</strong> End of your opponent's Movement phase.<br><strong>TARGET:</strong> One unit from your army that is in Reserves.<br><strong>EFFECT:</strong> Your unit can arrive on the battlefield as if it were the Reinforcements step of your Movement phase.", type: 'core' }
         ],
         shooting: [
-            { name: "Mortarions Teachings (1CP)", desc: "WHEN: Start of Shooting.\nTARGET: One DG Unit.\nEFFECT: Ranged weapons gain [SUSTAINED HITS 1]. If present, Criticals on 5+.", type: 'dg' },
-            { name: "Grenade (1CP)", desc: "WHEN: Shooting Phase.\nRANGE: 8 inches.\nEFFECT: Roll 6D6. 4+ = 1 MW.", type: 'core' },
-            { name: "Command Re-roll (1CP)", desc: "Core Re-roll.", type: 'core' }
+            { name: "Mortarions Teachings (1CP)", desc: "<strong>WHEN:</strong> Start of your Shooting phase.<br><strong>TARGET:</strong> One DEATH GUARD unit from your army.<br><strong>EFFECT:</strong> Until the end of the phase, ranged weapons equipped by models in your unit have the [SUSTAINED HITS 1] ability. If such a weapon already has this ability, until the end of the phase, each time an attack is made with that weapon, a Critical Hit is scored on an unmodified Hit roll of 5+ instead of 6.", type: 'dg' },
+            { name: "Grenade (1CP)", desc: "<strong>WHEN:</strong> Your Shooting phase.<br><strong>TARGET:</strong> One GRENADES unit from your army that is not within Engagement Range of any enemy units and has not been selected to shoot this phase.<br><strong>EFFECT:</strong> Select one enemy unit that is not within Engagement Range of any units from your army and is within 8\" of and visible to your unit. Roll six D6: for each 4+, that enemy unit suffers 1 mortal wound.", type: 'core' },
+            { name: "Command Re-roll (1CP)", desc: "<strong>EFFECT:</strong> Re-roll one die.", type: 'core' }
         ],
         charge: [
-            { name: "Sickening Impact (1CP)", desc: "WHEN: Charge Phase.\nTARGET: Charging DG Unit.\nEFFECT: Roll D6 per model. 4+ = 1 MW to enemy in Engagement.", type: 'dg' },
-            { name: "Tank Shock (1CP)", desc: "WHEN: Charge Phase.\nTARGET: Vehicle.\nEFFECT: Roll D6 = Toughness. 5+ = 1 MW.", type: 'core' },
-            { name: "Heroic Intervention (2CP)", desc: "WHEN: Opponent Charge.\nRANGE: 6 inches.\nEFFECT: Charge into combat.", type: 'core' }
+            { name: "Sickening Impact (1CP)", desc: "<strong>WHEN:</strong> Charge phase, just after a DEATH GUARD unit from your army ends a Charge move.<br><strong>TARGET:</strong> That DEATH GUARD unit.<br><strong>EFFECT:</strong> Select one enemy unit within Engagement Range of your unit and roll one D6 for each model in your unit: for each 4+, that enemy unit suffers 1 mortal wound.", type: 'dg' },
+            { name: "Tank Shock (1CP)", desc: "<strong>WHEN:</strong> Charge phase.<br><strong>TARGET:</strong> One VEHICLE unit from your army.<br><strong>EFFECT:</strong> Select one enemy unit within Engagement Range of your unit and select one melee weapon your unit is equipped with. Roll a number of D6 equal to that weapon's Strength characteristic. If that Strength characteristic is greater than that enemy unit's Toughness characteristic, roll two additional D6. For each 5+, that enemy unit suffers 1 mortal wound (to a maximum of 6 mortal wounds).", type: 'core' }
         ],
         fight: [
-            { name: "Grim Reapers (1CP)", desc: "WHEN: Fight Phase.\nTARGET: Deathshroud/Blightlords.\nEFFECT: Re-roll Hit rolls.", type: 'dg' },
-            { name: "Undying Spite (1CP)", desc: "WHEN: Character Destroyed.\nEFFECT: Fight on Death.", type: 'dg' },
-            { name: "Epic Challenge (1CP)", desc: "WHEN: Fight Phase.\nEFFECT: Attacks gain [PRECISION].", type: 'core' },
-            { name: "Counter-Offensive (2CP)", desc: "WHEN: After enemy fights.\nEFFECT: Interrupt.", type: 'core' }
+            { name: "Grim Reapers (1CP)", desc: "<strong>WHEN:</strong> Fight phase.<br><strong>TARGET:</strong> One BLIGHTLORD TERMINATORS or DEATHSHROUD TERMINATORS unit from your army that has not been selected to fight this phase.<br><strong>EFFECT:</strong> Until the end of the phase, each time a model in your unit makes an attack, you can re-roll the Hit roll.", type: 'dg' },
+            { name: "Undying Spite (1CP)", desc: "<strong>WHEN:</strong> Fight phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One DEATH GUARD CHARACTER unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, each time a model in your unit is destroyed, if that model has not fought this phase, do not remove it from play. The destroyed model can fight after the attacking model’s unit has finished making its attacks, and is then removed from play.", type: 'dg' },
+            { name: "Epic Challenge (1CP)", desc: "<strong>WHEN:</strong> Fight phase, when a CHARACTER unit from your army that is within Engagement Range of one or more attached units is selected to fight.<br><strong>TARGET:</strong> One CHARACTER model in your unit.<br><strong>EFFECT:</strong> Until the end of the phase, all melee attacks made by that model have the [PRECISION] ability.", type: 'core' },
+            { name: "Counter-Offensive (2CP)", desc: "<strong>WHEN:</strong> Fight phase, just after an enemy unit has fought.<br><strong>TARGET:</strong> One unit from your army that is within Engagement Range of one or more enemy units and that has not fought this phase.<br><strong>EFFECT:</strong> Your unit fights next.", type: 'core' }
         ],
         opp_movement: [
-            { name: "Rapid Ingress (1CP)", desc: "WHEN: End of Opp Move.\nRANGE: N/A (Reserves).\nEFFECT: Deep Strike now.", type: 'core' },
-            { name: "Fire Overwatch (1CP)", desc: "WHEN: Start/End of Move.\nRANGE: 24 inches.\nEFFECT: Shoot on 6s.", type: 'core' }
+            { name: "Rapid Ingress (1CP)", desc: "<strong>WHEN:</strong> End of your opponent's Movement phase.<br><strong>TARGET:</strong> One unit from your army that is in Reserves.<br><strong>EFFECT:</strong> Your unit can arrive on the battlefield as if it were the Reinforcements step of your Movement phase.", type: 'core' },
+            { name: "Fire Overwatch (1CP)", desc: "<strong>WHEN:</strong> Your opponent's Movement or Charge phase, just after an enemy unit is set up or when an enemy unit starts or ends a Normal, Advance, Fall Back or Charge move.<br><strong>TARGET:</strong> One unit from your army that is within 24\" of that enemy unit and that would be eligible to shoot if it were your Shooting phase.<br><strong>EFFECT:</strong> Your unit can shoot that enemy unit as if it were your Shooting phase. Until the end of the phase, each time a model in your unit makes a ranged attack, an unmodified Hit roll of 6 is required to score a hit, irrespective of any modifiers.", type: 'core' }
         ],
         opp_shooting: [
-            { name: "Smokescreen (1CP)", desc: "WHEN: Opp Shooting.\nTARGET: Smoke Unit.\nEFFECT: Stealth and Cover.", type: 'core' },
-            { name: "Go To Ground (1CP)", desc: "WHEN: Opp Shooting.\nTARGET: Infantry.\nEFFECT: Cover and 6++ Invuln.", type: 'core' }
+            { name: "Smokescreen (1CP)", desc: "<strong>WHEN:</strong> Your opponent's Shooting phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One SMOKE unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, your unit has the Benefit of Cover and the Stealth ability.", type: 'core' },
+            { name: "Go To Ground (1CP)", desc: "<strong>WHEN:</strong> Your opponent's Shooting phase, just after an enemy unit has selected its targets.<br><strong>TARGET:</strong> One INFANTRY unit from your army that was selected as the target of one or more of the attacking unit's attacks.<br><strong>EFFECT:</strong> Until the end of the phase, models in your unit have a 6+ invulnerable save and have the Benefit of Cover.", type: 'core' }
         ],
         opp_charge: [
-             { name: "Heroic Intervention (2CP)", desc: "WHEN: Opp Charge.\nRANGE: 6 inches.\nEFFECT: Charge enemy.", type: 'core' },
-             { name: "Fire Overwatch (1CP)", desc: "WHEN: Charge Move.\nRANGE: 24 inches.\nEFFECT: Shoot on 6s.", type: 'core' }
+             { name: "Heroic Intervention (2CP)", desc: "<strong>WHEN:</strong> Your opponent's Charge phase, just after an enemy unit ends a Charge move.<br><strong>TARGET:</strong> One unit from your army that is within 6\" of that enemy unit and would be eligible to declare a charge.<br><strong>EFFECT:</strong> Your unit now declares a charge that targets only that enemy unit, and you resolve that charge as if it were your Charge phase. Your unit does not receive any Charge bonus this turn.", type: 'core' },
+             { name: "Fire Overwatch (1CP)", desc: "<strong>WHEN:</strong> Start or End of Charge move.<br><strong>EFFECT:</strong> Shoot on 6s.", type: 'core' }
         ],
         opp_fight: [
-             { name: "Counter-Offensive (2CP)", desc: "WHEN: After enemy fights.\nEFFECT: Interrupt.", type: 'core' }
+             { name: "Counter-Offensive (2CP)", desc: "<strong>WHEN:</strong> Fight phase, just after an enemy unit has fought.<br><strong>EFFECT:</strong> Interrupt fight order.", type: 'core' }
         ]
     };
 
     // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_final_v2';
+    const STATE_KEY = 'dg_chosen_final_v4';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
-        activeId: 'rules', wounds: {} 
+        activeId: 'rules', wounds: {},
+        theme: 'light'
     };
 
     function saveState() {
@@ -407,6 +484,7 @@
         if(saved) {
             try { gameState = JSON.parse(saved); } catch(e) { console.error(e); }
         }
+        applyTheme(gameState.theme || 'light');
         updateConsole();
         updatePhaseDisplay();
         updateStratBar();
@@ -414,11 +492,29 @@
 
     function resetGame() {
         if(confirm("Reset Game? This clears all wounds, CP, and VP.")) {
-            gameState = { turn: 0, cp: 0, vp: 0, phaseIdx: -1, activeId: 'rules', wounds: {} };
+            const currentTheme = gameState.theme;
+            gameState = { turn: 0, cp: 0, vp: 0, phaseIdx: -1, activeId: 'rules', wounds: {}, theme: currentTheme };
             saveState();
             loadView('rules');
             updatePhaseDisplay();
             updateStratBar();
+        }
+    }
+
+    function toggleTheme() {
+        gameState.theme = gameState.theme === 'light' ? 'dark' : 'light';
+        applyTheme(gameState.theme);
+        saveState();
+    }
+
+    function applyTheme(theme) {
+        const btn = document.getElementById('theme-toggle');
+        if(theme === 'dark') {
+            document.body.classList.add('dark-mode');
+            btn.innerText = '☀';
+        } else {
+            document.body.classList.remove('dark-mode');
+            btn.innerText = '◐';
         }
     }
 
@@ -447,7 +543,6 @@
         gameState.activeId = id;
         saveState();
         
-        // Highlight Sidebar
         document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn_${id}`).classList.add('active');
 
@@ -461,7 +556,7 @@
 
         let html = '';
         if(data.tactics) {
-            html += `<div class="card tactics-card"><h3>⚡ TACTIC: ${data.tactics.title}</h3><p style="margin:0; font-size:0.85rem;">${data.tactics.desc}</p></div>`;
+            html += `<div class="card tactics-card"><h3>⚡ TACTIC: ${data.tactics.title}</h3><div class="tactics-detail">${data.tactics.desc}</div></div>`;
         }
 
         const unitList = data.type === 'combo' ? data.units : [{ profile: data.profile, count: data.count, label: 'Unit' }];
@@ -469,15 +564,14 @@
         
         unitList.forEach((u, idx) => {
             const prof = PROFILES[u.profile];
-            const uid = `${id}_${idx}`; // Unique ID for wound persistence
+            const uid = `${id}_${idx}`; 
             
             html += `<div class="split-col"><div class="card">`;
-            html += `<div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--bg-color); padding-bottom:5px; margin-bottom:8px;">
-                <strong style="color:var(--accent-color); font-size:1rem;">${prof.name}</strong>
-                <span style="font-size:0.7rem; background:#eee; padding:2px 6px; border-radius:4px; height:fit-content;">${u.label}</span>
+            html += `<div class="unit-header">
+                <div class="unit-title">${prof.name}</div>
+                <div class="unit-role">${u.label}</div>
             </div>`;
 
-            // Stats
             html += `<div class="stats-row">
                 <div class="stat-box"><span class="stat-label">M</span><div class="stat-val">${prof.stats.M}</div></div>
                 <div class="stat-box"><span class="stat-label">T</span><div class="stat-val">${prof.stats.T}</div></div>
@@ -488,30 +582,26 @@
                 <div class="stat-box invuln-box"><span class="stat-label">INV</span><div class="stat-val">${prof.stats.invuln}</div></div>
             </div>`;
 
-            // Wounds
             html += `<div>`;
             const maxW = parseInt(prof.stats.W);
             for(let i=0; i<u.count; i++) {
-                // Get saved wound value or default to max
                 const wKey = `${uid}_${i}`;
                 const curW = (gameState.wounds[wKey] !== undefined) ? gameState.wounds[wKey] : maxW;
                 
                 html += `<div class="wound-control">
-                    <span style="font-size:0.8rem; color:#7f8c8d;">Model ${i+1}</span>
+                    <span style="font-size:0.8rem; font-weight:600; color:var(--text-sub);">Model ${i+1}</span>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <div class="wound-btn" onclick="modW('${wKey}', -1, ${maxW})">-</div>
-                        <div class="wound-val" id="val_${wKey}" style="color:${curW===0?'#c0392b':'inherit'}">${curW}</div>
+                        <div class="wound-val" id="val_${wKey}" style="color:${curW===0?'var(--kw-neg)':'inherit'}">${curW}</div>
                         <div class="wound-btn" onclick="modW('${wKey}', 1, ${maxW})">+</div>
                     </div>
                 </div>`;
             }
-            // Deadly Demise check
             const ddVisible = checkDeadlyDemise(uid, u.count, maxW);
             html += `<div class="deadly-demise" id="dd_${uid}" style="display:${ddVisible?'block':'none'}">⚠️ DEADLY DEMISE CHECK</div>`;
             html += `</div>`;
 
-            // Weapons & Abilities
-            html += `<div style="margin-top:12px;">`;
+            html += `<div style="margin-top:15px;">`;
             prof.wargear.forEach(w => {
                 html += `<div class="weapon-row">
                     <div class="weapon-header"><div class="weapon-name">${w.name}</div></div>
@@ -544,7 +634,6 @@
         }
 
         const pId = PHASES[gameState.phaseIdx].id;
-        // Merge generic phases for Stratagems (e.g., all 'movement' strats apply to 'my_movement')
         let key = pId; 
         const strats = STRATAGEMS[key] || [];
 
@@ -555,6 +644,7 @@
 
         let html = '';
         strats.forEach((s, index) => {
+            // Using index ID to prevent string escape errors
             html += `<div class="strat-pill ${s.type}" onclick="openStrat('${key}', ${index})">${s.name}</div>`;
         });
         bar.innerHTML = html;
@@ -562,13 +652,14 @@
     
     function openStrat(phaseKey, index) {
         const s = STRATAGEMS[phaseKey][index];
-        alert(`${s.name}\n\n${s.desc}`);
+        // Replacing breaks with newlines for alert
+        const descText = s.desc.replace(/<br>/g, "\n").replace(/<strong>/g, "").replace(/<\/strong>/g, "");
+        alert(`${s.name}\n\n${descText}`);
     }
 
     // --- 5. GAME ENGINE LOGIC ---
 
     function modW(key, diff, max) {
-        // Init if undefined
         if(gameState.wounds[key] === undefined) gameState.wounds[key] = max;
         
         let v = gameState.wounds[key] + diff;
@@ -578,14 +669,12 @@
         gameState.wounds[key] = v;
         saveState();
         
-        // Update UI
         const el = document.getElementById(`val_${key}`);
         if(el) {
             el.innerText = v;
-            el.style.color = (v === 0) ? '#c0392b' : 'inherit';
+            el.style.color = (v === 0) ? 'var(--kw-neg)' : 'inherit';
         }
 
-        // Check DD
         const baseUid = key.substring(0, key.lastIndexOf('_'));
         if(v === 0) {
             const ddEl = document.getElementById(`dd_${baseUid}`);
@@ -631,29 +720,22 @@
         }
     }
 
-    // PHASE & CP ENGINE
     document.getElementById('next-phase-btn').onclick = () => {
-        // Wake Lock Trigger (iOS requires user interaction)
         requestWakeLock();
 
-        // Start Game
         if(gameState.phaseIdx === -1) {
             gameState.phaseIdx = 0;
             gameState.turn = 1;
-            gameState.cp++; // 10th Ed: Gain 1 CP at start of Command Phase
+            gameState.cp++; 
             alert("BATTLE STARTED: +1 CP (My Command)");
         } else {
-            // Move Phase
             gameState.phaseIdx = (gameState.phaseIdx + 1) % PHASES.length;
             const p = PHASES[gameState.phaseIdx];
 
-            // Turn Cycle
             if(gameState.phaseIdx === 0) gameState.turn++;
 
-            // CP Logic (10th Ed: +1 CP in both Command Phases)
             if(p.cp) {
                 gameState.cp++;
-                // Optional visual feedback
                 const btn = document.getElementById('cp-val');
                 btn.style.color = '#2ecc71';
                 setTimeout(() => btn.style.color = '', 500);
@@ -663,7 +745,7 @@
         saveState();
         updatePhaseDisplay();
         updateStratBar();
-        loadView(gameState.activeId); // Refresh for phase highlights
+        loadView(gameState.activeId); 
     };
 
     function formatKw(str) {
@@ -676,7 +758,6 @@
         }).join(', ');
     }
 
-    // --- 5. WAKE LOCK API ---
     async function requestWakeLock() {
         try {
             if ('wakeLock' in navigator) {
@@ -685,7 +766,6 @@
         } catch (err) { console.log('Wake Lock Error', err); }
     }
 
-    // INIT
     loadState();
     if(gameState.activeId) loadView(gameState.activeId);
 
