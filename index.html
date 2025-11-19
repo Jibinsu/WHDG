@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Chosen - Competitive Dashboard</title>
+    <title>The Chosen - Tournament Dashboard</title>
     <style>
         :root {
             --bg-color: #f0f2f5; --surface-color: #ffffff; --text-color: #1c1e21;
@@ -137,7 +137,53 @@
 
 <script>
     // --- DATA SOURCE: THE CHOSEN (COMPETITIVE) ---
-    // Updated exactly per provided screenshots
+    // Updated with specific unit counts for wound tracking
+    
+    // Shared Data Profiles
+    const profiles = {
+        deathshroud: {
+            stats: { M: '5"', T: '6', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' },
+            wargear: [
+                { name: 'Plaguespurt Gauntlet', type: 'Ranged', profiles: [{ range: '12"', a: 'D6', bs: 'N/A', s: '3', ap: '0', d: '1', kw: 'ANTI-INF 4+, IGNORES COVER, PISTOL, TORRENT' }] },
+                { name: 'Manreaper - Strike', type: 'Melee', profiles: [{ range: 'Melee', a: '4', ws: '2+', s: '8', ap: '-2', d: '2', kw: 'LETHAL HITS' }] },
+                { name: 'Manreaper - Sweep', type: 'Melee', profiles: [{ range: 'Melee', a: '8', ws: '3+', s: '4', ap: '-1', d: '1', kw: 'LETHAL HITS' }] }
+            ],
+            abilities: [
+                { name: 'Deep Strike', type: 'core', phases: ['movement', 'setup'] },
+                { name: 'Silent Bodyguard', desc: 'While a Character leads this unit, that Character has <strong>Feel No Pain 4+</strong>.', phases: ['any'] },
+                { name: 'Death Approaches', desc: 'Deep Strike can be set up > 6" away from Afflicted units (instead of 9").', phases: ['movement'] },
+                { name: 'Icon of Despair (Aura)', desc: 'Enemy units within 6" worsen Leadership by 1.', phases: ['aura'] }
+            ],
+            keywords: ['INFANTRY', 'TERMINATOR', 'CHAOS', 'NURGLE', 'DEATHSHROUD']
+        },
+        drone: {
+            stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' },
+            wargear: [
+                { name: 'Heavy Blight Launcher', type: 'Ranged', profiles: [{ range: '36"', a: 'D6+2', bs: '3+', s: '10', ap: '-2', d: '3', kw: 'BLAST, LETHAL HITS' }] },
+                { name: 'Plague Probe', type: 'Melee', profiles: [{ range: 'Melee', a: '3', ws: '3+', s: '6', ap: '-1', d: '1', kw: 'LETHAL HITS' }] }
+            ],
+            abilities: [
+                { name: 'Deadly Demise D3', type: 'core', phases: ['any'] },
+                { name: 'Explosive Blight', desc: 'Shooting Phase: If this model destroys a unit, roll D6 (+1 if unit was Afflicted). On 5+, each enemy unit within 6" of destroyed model becomes <strong>Afflicted</strong>.', phases: ['shooting'] }
+            ],
+            keywords: ['VEHICLE', 'FLY', 'DAEMON', 'CHAOS', 'NURGLE', 'FOETID BLOAT-DRONE']
+        },
+        pbc: {
+            stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' },
+            wargear: [
+                { name: 'Plagueburst Mortar', type: 'Ranged', profiles: [{ range: '48"', a: 'D6+3', bs: '3+', s: '8', ap: '-1', d: '2', kw: 'BLAST, INDIRECT, LETHAL HITS' }] },
+                { name: 'Entropy Cannon', type: 'Ranged', profiles: [{ range: '36"', a: '1', bs: '3+', s: '10', ap: '-3', d: 'D6+1', kw: 'LETHAL HITS' }] },
+                { name: 'Heavy Slugger', type: 'Ranged', profiles: [{ range: '36"', a: '4', bs: '3+', s: '5', ap: '-1', d: '1', kw: 'LETHAL HITS' }] },
+                { name: 'Armoured Tracks', type: 'Melee', profiles: [{ range: 'Melee', a: '3', ws: '4+', s: '6', ap: '0', d: '1', kw: '' }] }
+            ],
+            abilities: [
+                { name: 'Deadly Demise D3', type: 'core', phases: ['any'] },
+                { name: 'Spore-laced Shock Waves', desc: 'Start of Shooting: When selecting Mortar target, roll D6 for target and units within 3" (Add 1 if Afflicted). On 6+, unit suffers D3 Mortal Wounds after attacks resolve.', phases: ['shooting'] }
+            ],
+            keywords: ['VEHICLE', 'DAEMON', 'CHAOS', 'NURGLE', 'PLAGUEBURST CRAWLER']
+        }
+    };
+
     const codexData = [
         {
             id: 'rules', name: '📜 ARMY & DETACHMENT', type: 'rule',
@@ -231,37 +277,18 @@
             defaultCount: 5
         },
         {
-            id: 'deathshroud_6', name: 'Deathshroud Terminators (6)',
-            stats: { M: '5"', T: '6', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' },
-            wargear: [
-                { name: 'Plaguespurt Gauntlet', type: 'Ranged', profiles: [{ range: '12"', a: 'D6', bs: 'N/A', s: '3', ap: '0', d: '1', kw: 'ANTI-INF 4+, IGNORES COVER, PISTOL, TORRENT' }] },
-                { name: 'Manreaper - Strike', type: 'Melee', profiles: [{ range: 'Melee', a: '4', ws: '2+', s: '8', ap: '-2', d: '2', kw: 'LETHAL HITS' }] },
-                { name: 'Manreaper - Sweep', type: 'Melee', profiles: [{ range: 'Melee', a: '8', ws: '3+', s: '4', ap: '-1', d: '1', kw: 'LETHAL HITS' }] }
-            ],
-            abilities: [
-                { name: 'Deep Strike', type: 'core', phases: ['movement', 'setup'] },
-                { name: 'Silent Bodyguard', desc: 'While a Character leads this unit, that Character has <strong>Feel No Pain 4+</strong>.', phases: ['any'] },
-                { name: 'Death Approaches', desc: 'Deep Strike can be set up > 6" away from Afflicted units (instead of 9").', phases: ['movement'] },
-                { name: 'Icon of Despair (Aura)', desc: 'Enemy units within 6" worsen Leadership by 1.', phases: ['aura'] }
-            ],
-            keywords: ['INFANTRY', 'TERMINATOR', 'CHAOS', 'NURGLE', 'DEATHSHROUD'],
+            id: 'dst_1', name: 'Deathshroud (3)',
+            ...profiles.deathshroud,
+            defaultCount: 3
+        },
+        {
+            id: 'dst_2', name: 'Deathshroud (6)',
+            ...profiles.deathshroud,
             defaultCount: 6
         },
         {
-            id: 'deathshroud_3', name: 'Deathshroud Terminators (3)',
-            stats: { M: '5"', T: '6', Sv: '2+', W: '4', Ld: '6+', OC: '1', invuln: '4+' },
-            wargear: [
-                { name: 'Plaguespurt Gauntlet', type: 'Ranged', profiles: [{ range: '12"', a: 'D6', bs: 'N/A', s: '3', ap: '0', d: '1', kw: 'ANTI-INF 4+, IGNORES COVER, PISTOL, TORRENT' }] },
-                { name: 'Manreaper - Strike', type: 'Melee', profiles: [{ range: 'Melee', a: '4', ws: '2+', s: '8', ap: '-2', d: '2', kw: 'LETHAL HITS' }] },
-                { name: 'Manreaper - Sweep', type: 'Melee', profiles: [{ range: 'Melee', a: '8', ws: '3+', s: '4', ap: '-1', d: '1', kw: 'LETHAL HITS' }] }
-            ],
-            abilities: [
-                { name: 'Deep Strike', type: 'core', phases: ['movement', 'setup'] },
-                { name: 'Silent Bodyguard', desc: 'While a Character leads this unit, that Character has <strong>Feel No Pain 4+</strong>.', phases: ['any'] },
-                { name: 'Death Approaches', desc: 'Deep Strike can be set up > 6" away from Afflicted units (instead of 9").', phases: ['movement'] },
-                { name: 'Icon of Despair (Aura)', desc: 'Enemy units within 6" worsen Leadership by 1.', phases: ['aura'] }
-            ],
-            keywords: ['INFANTRY', 'TERMINATOR', 'CHAOS', 'NURGLE', 'DEATHSHROUD'],
+            id: 'dst_3', name: 'Deathshroud (3)',
+            ...profiles.deathshroud,
             defaultCount: 3
         },
         {
@@ -278,33 +305,23 @@
             defaultCount: 2
         },
         {
-            id: 'drone', name: 'Foetid Bloat-drone',
-            stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' },
-            wargear: [
-                { name: 'Heavy Blight Launcher', type: 'Ranged', profiles: [{ range: '36"', a: 'D6+2', bs: '3+', s: '10', ap: '-2', d: '3', kw: 'BLAST, LETHAL HITS' }] },
-                { name: 'Plague Probe', type: 'Melee', profiles: [{ range: 'Melee', a: '3', ws: '3+', s: '6', ap: '-1', d: '1', kw: 'LETHAL HITS' }] }
-            ],
-            abilities: [
-                { name: 'Deadly Demise D3', type: 'core', phases: ['any'] },
-                { name: 'Explosive Blight', desc: 'Shooting Phase: If this model destroys a unit, roll D6 (+1 if unit was Afflicted). On 5+, each enemy unit within 6" of destroyed model becomes <strong>Afflicted</strong>.', phases: ['shooting'] }
-            ],
-            keywords: ['VEHICLE', 'FLY', 'DAEMON', 'CHAOS', 'NURGLE', 'FOETID BLOAT-DRONE'],
+            id: 'drone_1', name: 'Foetid Bloat-drone 1',
+            ...profiles.drone,
             defaultCount: 1
         },
         {
-            id: 'pbc', name: 'Plagueburst Crawler',
-            stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' },
-            wargear: [
-                { name: 'Plagueburst Mortar', type: 'Ranged', profiles: [{ range: '48"', a: 'D6+3', bs: '3+', s: '8', ap: '-1', d: '2', kw: 'BLAST, INDIRECT, LETHAL HITS' }] },
-                { name: 'Entropy Cannon', type: 'Ranged', profiles: [{ range: '36"', a: '1', bs: '3+', s: '10', ap: '-3', d: 'D6+1', kw: 'LETHAL HITS' }] },
-                { name: 'Heavy Slugger', type: 'Ranged', profiles: [{ range: '36"', a: '4', bs: '3+', s: '5', ap: '-1', d: '1', kw: 'LETHAL HITS' }] },
-                { name: 'Armoured Tracks', type: 'Melee', profiles: [{ range: 'Melee', a: '3', ws: '4+', s: '6', ap: '0', d: '1', kw: '' }] }
-            ],
-            abilities: [
-                { name: 'Deadly Demise D3', type: 'core', phases: ['any'] },
-                { name: 'Spore-laced Shock Waves', desc: 'Start of Shooting: When selecting Mortar target, roll D6 for target and units within 3" (Add 1 if Afflicted). On 6+, unit suffers D3 Mortal Wounds after attacks resolve.', phases: ['shooting'] }
-            ],
-            keywords: ['VEHICLE', 'DAEMON', 'CHAOS', 'NURGLE', 'PLAGUEBURST CRAWLER'],
+            id: 'drone_2', name: 'Foetid Bloat-drone 2',
+            ...profiles.drone,
+            defaultCount: 1
+        },
+        {
+            id: 'pbc_1', name: 'Plagueburst Crawler 1',
+            ...profiles.pbc,
+            defaultCount: 1
+        },
+        {
+            id: 'pbc_2', name: 'Plagueburst Crawler 2',
+            ...profiles.pbc,
             defaultCount: 1
         },
         {
