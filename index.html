@@ -12,6 +12,7 @@
 
     <style>
         :root {
+            /* Light Mode */
             --bg-color: #eaedf0; --surface-color: #ffffff; --text-color: #1c1e21;
             --text-sub: #606770; --header-bg: #2c3e50; --header-text: #ffffff;
             --accent-color: #2980b9; --border-color: #dfe3e8;
@@ -21,16 +22,20 @@
             
             --kw-pos: #2e7d32; --kw-neg: #c62828; --kw-spec: #6a1b9a;
             --strat-dg: #27ae60; --strat-core: #7f8c8d;
+            --warning-bg: #fff3e0; --warning-border: #ffe0b2; --warning-text: #e65100;
         }
 
         body.dark-mode {
+            /* Dark Mode */
             --bg-color: #121212; --surface-color: #1e1e1e; --text-color: #e0e0e0;
             --text-sub: #a0a0a0; --header-bg: #000000; --header-text: #27ae60;
             --accent-color: #27ae60; --border-color: #333333; --console-bg: #000000;
             --stat-bg: #2c2c2c; --stat-header: #3a3a3a;
             --highlight-bg: #1b3a1e; --highlight-border: #2e7d32;
+            --warning-bg: #3e2723; --warning-border: #e65100; --warning-text: #ffcc80;
             
             --kw-pos: #66bb6a; --kw-neg: #ef5350; --kw-spec: #ab47bc;
+            --strat-dg: #1b5e20; --strat-core: #546e7a;
         }
 
         html, body {
@@ -70,9 +75,8 @@
             width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font-size: 1.2rem;
         }
 
-        /* --- Body --- */
+        /* --- Sidebar --- */
         #main-body { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
-        
         #unit-list {
             width: 260px; flex-shrink: 0; background-color: var(--stat-bg); 
             border-right: 1px solid var(--border-color); overflow-y: auto; padding: 10px; padding-bottom: 130px;
@@ -88,6 +92,7 @@
         .unit-btn.rules-btn { border-left: 5px solid var(--highlight-border); }
         .unit-btn.combo-btn { border-left: 5px solid var(--accent-color); }
         
+        /* --- Content --- */
         #unit-details-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-color); }
         #content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 130px; display: flex; flex-direction: column; gap: 15px; }
 
@@ -95,7 +100,7 @@
         #strat-bar {
             background: var(--header-bg); border-top: 1px solid rgba(255,255,255,0.1);
             padding: 8px 10px; display: flex; gap: 10px; overflow-x: auto;
-            white-space: nowrap; flex-shrink: 0; height: 50px; align-items: center;
+            white-space: nowrap; flex-shrink: 0; height: 55px; align-items: center;
             -webkit-overflow-scrolling: touch;
         }
         #strat-bar::-webkit-scrollbar { display: none; }
@@ -109,7 +114,7 @@
 
         /* --- Console --- */
         #command-console {
-            height: 65px; background-color: var(--console-bg); color: #f1f1f1;
+            height: 65px; background-color: var(--console-bg); color: var(--console-text);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 20px; box-shadow: 0 -2px 15px rgba(0,0,0,0.5); flex-shrink: 0; z-index: 20;
         }
@@ -161,8 +166,9 @@
         .active-phase { border-color: var(--highlight-border); background: var(--highlight-bg); }
         .enhancement { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
         
+        /* Deadly Demise Alert - Hidden by default, only shows on trigger */
         .status-alert { display: none; font-weight: 900; text-align: center; font-size: 0.85rem; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 5px; border-radius: 4px; }
-        .deadly-demise { color: var(--kw-neg); display: block; animation: pulse 2s infinite; }
+        .deadly-demise { color: var(--kw-neg); animation: pulse 1s infinite; }
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         
@@ -225,7 +231,7 @@
 </div>
 
 <script>
-    // --- 1. DATA DEFINITIONS ---
+    // --- 1. GAME DATA (THE CHOSEN) ---
     const PROFILES = {
         loc: {
             name: `Lord of Contagion`,
@@ -292,9 +298,12 @@
             name: `Blightlord Terms`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
+                { name: `Combi-bolter`, type: `Ranged`, stats: { range: `24"`, a: `2`, bs: `3+`, s: `4`, ap: `0`, d: `1` }, kw: `LETHAL, RAPID FIRE 2` },
                 { name: `Blight Launcher`, type: `Ranged`, stats: { range: `24"`, a: `D3`, bs: `3+`, s: `6`, ap: `-1`, d: `2` }, kw: `BLAST, LETHAL HITS` },
                 { name: `Reaper Autocannon`, type: `Ranged`, stats: { range: `36"`, a: `4`, bs: `3+`, s: `7`, ap: `-1`, d: `1` }, kw: `DEV WOUNDS, SUSTAINED 1` },
-                { name: `Combi-bolter`, type: `Ranged`, stats: { range: `24"`, a: `2`, bs: `3+`, s: `4`, ap: `0`, d: `1` }, kw: `LETHAL, RAPID FIRE 2` }
+                { name: `Plague Spewer`, type: `Ranged`, stats: { range: `12"`, a: `D6`, bs: `N/A`, s: `5`, ap: `-1`, d: `1` }, kw: `ANTI-INF 2+, IGNORES COVER, TORRENT` },
+                { name: `Flail of Corruption`, type: `Melee`, stats: { range: `Melee`, a: `6`, ws: `3+`, s: `5`, ap: `-1`, d: `2` }, kw: `LETHAL HITS` },
+                { name: `Bubotic Blade`, type: `Melee`, stats: { range: `Melee`, a: `3`, ws: `3+`, s: `5`, ap: `-2`, d: `2` }, kw: `LETHAL HITS` }
             ],
             abilities: [
                 { name: `Blistering Fusillade`, desc: `If this unit has a Starting Strength of 5 or more, or if a CHARACTER is leading this unit, then each time a model in this unit makes a ranged attack that targets an Afflicted unit, improve the Strength and Armour Penetration characteristics of that attack by 1.`, phases: [`shooting`, `opp_shooting`] }
@@ -309,13 +318,21 @@
         drone: {
             name: `Foetid Bloat-drone`,
             stats: { M: '10"', T: '9', Sv: '3+', W: '10', Ld: '6+', OC: '3', invuln: '5+' },
-            wargear: [ { name: `Heavy Blight Launcher`, type: `Ranged`, stats: { range: `36"`, a: `D6+2`, bs: `3+`, s: `10`, ap: `-2`, d: `3` }, kw: `BLAST, LETHAL HITS` } ],
+            wargear: [ 
+                { name: `Heavy Blight Launcher`, type: `Ranged`, stats: { range: `36"`, a: `D6+2`, bs: `3+`, s: `10`, ap: `-2`, d: `3` }, kw: `BLAST, LETHAL HITS` },
+                { name: `Plague Probe`, type: `Melee`, stats: { range: `Melee`, a: `3`, ws: `3+`, s: `6`, ap: `-1`, d: `1` }, kw: `LETHAL HITS` }
+            ],
             abilities: [ { name: `Explosive Blight`, desc: `In your Shooting phase, each time this model makes an attack that destroys an enemy unit, before removing the last model in that unit from play, roll a D6, adding 1 to the result if that unit is Afflicted: on a 5+, each enemy unit within 6" of that model is Afflicted until the start of your next turn.`, phases: [`shooting`] }, { name: `Deadly Demise D3`, desc: ``, phases: [`any`] } ]
         },
         pbc: {
             name: `Plagueburst Crawler`,
             stats: { M: '10"', T: '10', Sv: '2+', W: '12', Ld: '6+', OC: '3', invuln: '5+' },
-            wargear: [ { name: `Plagueburst Mortar`, type: `Ranged`, stats: { range: `48"`, a: `D6+3`, bs: `3+`, s: `8`, ap: `-1`, d: `2` }, kw: `BLAST, INDIRECT, LETHAL` }, { name: `Entropy Cannon`, type: `Ranged`, stats: { range: `36"`, a: `1`, bs: `3+`, s: `10`, ap: `-3`, d: `D6+1` }, kw: `LETHAL HITS` } ],
+            wargear: [ 
+                { name: `Plagueburst Mortar`, type: `Ranged`, stats: { range: `48"`, a: `D6+3`, bs: `3+`, s: `8`, ap: `-1`, d: `2` }, kw: `BLAST, INDIRECT, LETHAL` }, 
+                { name: `Entropy Cannon`, type: `Ranged`, stats: { range: `36"`, a: `1`, bs: `3+`, s: `10`, ap: `-3`, d: `D6+1` }, kw: `LETHAL HITS` },
+                { name: `Heavy Slugger`, type: `Ranged`, stats: { range: `36"`, a: `4`, bs: `3+`, s: `5`, ap: `-1`, d: `1` }, kw: `LETHAL HITS` },
+                { name: `Armoured Tracks`, type: `Melee`, stats: { range: `Melee`, a: `3`, ws: `4+`, s: `6`, ap: `0`, d: `1` }, kw: `` }
+            ],
             abilities: [ { name: `Spore-laced Shock Waves`, desc: `In your Shooting phase, each time you select a target for this model’s Plagueburst mortar, roll one D6 for the target unit and every other enemy unit within 3" of the target unit, adding 1 to that roll if the unit being rolled for is Afflicted. On a 6+, the unit being rolled for is struck by spores; after resolving all of this model’s attacks against the target unit, each unit struck by spores suffers D3 mortal wounds.`, phases: [`shooting`] } ]
         }
     };
@@ -437,7 +454,7 @@
     };
 
     // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_final_v8';
+    const STATE_KEY = 'dg_chosen_final_v10';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
@@ -646,12 +663,12 @@
             el.style.color = (v === 0) ? 'var(--kw-neg)' : 'inherit';
         }
 
-        // Deadly Demise
+        // Deadly Demise - Only show if model just died
         const baseUid = key.substring(0, key.lastIndexOf('_'));
         const ddEl = document.getElementById(`dd_${baseUid}`);
         if(ddEl && v === 0 && diff < 0) {
             ddEl.style.display = 'block';
-            setTimeout(() => { ddEl.style.display = 'none'; }, 4000);
+            setTimeout(() => { ddEl.style.display = 'none'; }, 5000);
         }
     }
 
