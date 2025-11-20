@@ -12,13 +12,13 @@
 
     <style>
         :root {
-            /* Light Mode */
             --bg-color: #eaedf0; --surface-color: #ffffff; --text-color: #1c1e21;
             --text-sub: #606770; --header-bg: #2c3e50; --header-text: #ffffff;
             --accent-color: #2980b9; --border-color: #dfe3e8;
             --console-bg: #1a1a1a; --console-text: #f1f1f1;
             --stat-bg: #f8f9fa; --stat-header: #e9ecef;
             --highlight-bg: #e8f5e9; --highlight-border: #c8e6c9;
+            --guide-bg: #e3f2fd; --guide-border: #bbdefb; --guide-text: #0d47a1;
             
             --kw-pos: #2e7d32; --kw-neg: #c62828; --kw-spec: #6a1b9a;
             --strat-dg: #27ae60; --strat-core: #7f8c8d;
@@ -26,12 +26,12 @@
         }
 
         body.dark-mode {
-            /* Dark Mode */
             --bg-color: #121212; --surface-color: #1e1e1e; --text-color: #e0e0e0;
             --text-sub: #a0a0a0; --header-bg: #000000; --header-text: #27ae60;
             --accent-color: #27ae60; --border-color: #333333; --console-bg: #000000;
             --stat-bg: #2c2c2c; --stat-header: #3a3a3a;
             --highlight-bg: #1b3a1e; --highlight-border: #2e7d32;
+            --guide-bg: #0d1b2a; --guide-border: #1e3a5f; --guide-text: #90caf9;
             --warning-bg: #3e2723; --warning-border: #e65100; --warning-text: #ffcc80;
             
             --kw-pos: #66bb6a; --kw-neg: #ef5350; --kw-spec: #ab47bc;
@@ -132,9 +132,17 @@
         /* --- Cards --- */
         .card { background: var(--surface-color); border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s; }
         
+        /* Yellow Tactics Card */
         .tactics-card { background-color: var(--highlight-bg); border: 1px solid var(--highlight-border); color: var(--text-color); }
         .tactics-card h3 { margin-top: 0; color: var(--kw-pos); border-bottom: 1px solid var(--highlight-border); padding-bottom: 5px; margin-bottom: 10px; font-size: 1rem; }
+        
+        /* Blue Strategy Card */
+        .guide-card { background-color: var(--guide-bg); border: 1px solid var(--guide-border); color: var(--text-color); }
+        .guide-card h3 { margin-top: 0; color: var(--guide-text); border-bottom: 1px solid var(--guide-border); padding-bottom: 5px; margin-bottom: 10px; font-size: 1rem; }
+        
         .tactics-detail { font-size: 0.9rem; line-height: 1.5; }
+        .guide-grid { display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.9rem; }
+        .guide-label { font-weight: 900; color: var(--guide-text); margin-right: 5px; font-size: 0.8rem; text-transform: uppercase; }
 
         .split-view { display: flex; gap: 15px; flex-wrap: wrap; }
         .split-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 10px; }
@@ -166,7 +174,7 @@
         .active-phase { border-color: var(--highlight-border); background: var(--highlight-bg); }
         .enhancement { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
         
-        /* Deadly Demise Alert - Hidden by default, only shows on trigger */
+        /* Deadly Demise Alert */
         .status-alert { display: none; font-weight: 900; text-align: center; font-size: 0.85rem; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 5px; border-radius: 4px; }
         .deadly-demise { color: var(--kw-neg); animation: pulse 1s infinite; }
         
@@ -231,7 +239,7 @@
 </div>
 
 <script>
-    // --- 1. GAME DATA (THE CHOSEN) ---
+    // --- 1. DATA DEFINITIONS ---
     const PROFILES = {
         loc: {
             name: `Lord of Contagion`,
@@ -298,9 +306,9 @@
             name: `Blightlord Terms`,
             stats: { M: '5"', T: '6', Sv: '2+', W: '3', Ld: '6+', OC: '1', invuln: '4+' },
             wargear: [
-                { name: `Combi-bolter`, type: `Ranged`, stats: { range: `24"`, a: `2`, bs: `3+`, s: `4`, ap: `0`, d: `1` }, kw: `LETHAL, RAPID FIRE 2` },
                 { name: `Blight Launcher`, type: `Ranged`, stats: { range: `24"`, a: `D3`, bs: `3+`, s: `6`, ap: `-1`, d: `2` }, kw: `BLAST, LETHAL HITS` },
                 { name: `Reaper Autocannon`, type: `Ranged`, stats: { range: `36"`, a: `4`, bs: `3+`, s: `7`, ap: `-1`, d: `1` }, kw: `DEV WOUNDS, SUSTAINED 1` },
+                { name: `Combi-bolter`, type: `Ranged`, stats: { range: `24"`, a: `2`, bs: `3+`, s: `4`, ap: `0`, d: `1` }, kw: `LETHAL, RAPID FIRE 2` },
                 { name: `Plague Spewer`, type: `Ranged`, stats: { range: `12"`, a: `D6`, bs: `N/A`, s: `5`, ap: `-1`, d: `1` }, kw: `ANTI-INF 2+, IGNORES COVER, TORRENT` },
                 { name: `Flail of Corruption`, type: `Melee`, stats: { range: `Melee`, a: `6`, ws: `3+`, s: `5`, ap: `-1`, d: `2` }, kw: `LETHAL HITS` },
                 { name: `Bubotic Blade`, type: `Melee`, stats: { range: `Melee`, a: `3`, ws: `3+`, s: `5`, ap: `-2`, d: `2` }, kw: `LETHAL HITS` }
@@ -370,6 +378,11 @@
                 title: 'THE MELEE BLENDER',
                 desc: '<strong>The Interaction:</strong> The Lord of Contagion grants the unit <strong>[Vector of Disease]</strong>. This provides <strong>[Sustained Hits 1]</strong> (Exploding 6s) and <strong>[Lance]</strong> (+1 to Wound on the charge).<br><br><strong>The Math:</strong> Deathshroud Scythes are Strength 8.<br>- With Lance, they become S8 +1 to Wound.<br>- Wound T4 (Marines) on 2+.<br>- Wound T5-T8 (Elites) on 2+.<br>- Wound T9-T15 (Tanks/Knights) on 4+.<br><br>Combined with 6 models (approx 25 attacks) + Sustained Hits, this unit mathematically destroys almost any target in one phase.'
             },
+            strategy: {
+                role: 'Tank/Monster Hunter',
+                deploy: 'Deep Strike (Rapid Ingress)',
+                target: 'Knights, Land Raiders, Primarchs'
+            },
             units: [ { profile: 'loc', count: 1, label: 'Warlord' }, { profile: 'deathshroud', count: 6, label: 'Bodyguard' } ]
         },
         {
@@ -378,6 +391,11 @@
             tactics: {
                 title: 'SPOT & OVERWATCH',
                 desc: '<strong>Spotting:</strong> In your Shooting Phase, use the LoV ability <strong>Blight Bombardment</strong> first. Select a visible enemy within 30". Your Plagueburst Crawlers (and all Blast weapons) now <strong>re-roll Hits</strong> against that target.<br><br><strong>Overwatch Threat:</strong> The LoV grants <strong>Re-roll Wounds</strong> to his unit. Deathshroud Gauntlets are <strong>Anti-Infantry 4+</strong>. If Infantry move within 12", fire Overwatch. You hit on 6s, but you auto-wound on 4+ (Criticals) and re-roll failed wounds. This melts infantry.'
+            },
+            strategy: {
+                role: 'Buffs / Anti-Infantry',
+                deploy: 'Deep Strike (High Vantage)',
+                target: 'Elite Infantry Screens'
             },
             units: [ { profile: 'lov', count: 1, label: 'Leader' }, { profile: 'deathshroud', count: 3, label: 'Bodyguard' } ]
         },
@@ -388,15 +406,20 @@
                 title: 'THE RESURRECTION LOOP',
                 desc: '<strong>The Loop:</strong><br>1. In your Shooting Phase, Typhus uses <strong>Eater Plague</strong>. If he kills models, use <strong>Curse of the Walking Pox</strong> to return destroyed Poxwalkers.<br>2. In the Fight Phase, Poxwalkers attack. Kills return Poxwalkers.<br>3. Typhus attacks. Kills return Poxwalkers.<br><br><strong>Durability:</strong> Typhus gives the unit -1 to be Hit in Melee. They have FNP 5+.'
             },
+            strategy: {
+                role: 'Home Defense / Shield',
+                deploy: 'Home Objective',
+                target: 'Deep Strikers'
+            },
             units: [ { profile: 'typhus', count: 1, label: 'Leader' }, { profile: 'poxwalkers', count: 10, label: 'Bodyguard' } ]
         },
-        { id: 'sq_blight', name: '🛡️ ANVIL (Blightlords)', group: 'Solo Operatives', type: 'single', profile: 'blightlords', count: 5 },
-        { id: 'sq_ds_solo', name: '💀 ACTION (Deathshroud)', group: 'Solo Operatives', type: 'single', profile: 'deathshroud', count: 3 },
-        { id: 'veh_pbc1', name: '💥 PBC 1', group: 'Vehicles', type: 'single', profile: 'pbc', count: 1 },
-        { id: 'veh_pbc2', name: '💥 PBC 2', group: 'Vehicles', type: 'single', profile: 'pbc', count: 1 },
-        { id: 'veh_drone1', name: '🦟 DRONE 1', group: 'Vehicles', type: 'single', profile: 'drone', count: 1 },
-        { id: 'veh_drone2', name: '🦟 DRONE 2', group: 'Vehicles', type: 'single', profile: 'drone', count: 1 },
-        { id: 'veh_spawn', name: '👹 SPAWN (2)', group: 'Vehicles', type: 'single', profile: 'spawn', count: 2 }
+        { id: 'sq_blight', name: '🛡️ ANVIL (Blightlords)', group: 'Solo Operatives', type: 'single', profile: 'blightlords', count: 5, strategy: { role: 'Midfield Bully', deploy: 'Midfield', target: 'Objective Holders'} },
+        { id: 'sq_ds_solo', name: '💀 ACTION (Deathshroud)', group: 'Solo Operatives', type: 'single', profile: 'deathshroud', count: 3, strategy: { role: 'Secondary Scorer', deploy: 'Deep Strike (Corners)', target: 'Isolated Units'} },
+        { id: 'veh_pbc1', name: '💥 PBC 1', group: 'Vehicles', type: 'single', profile: 'pbc', count: 1, strategy: { role: 'Artillery', deploy: 'Hidden Backfield', target: 'Infantry Swarms'} },
+        { id: 'veh_pbc2', name: '💥 PBC 2', group: 'Vehicles', type: 'single', profile: 'pbc', count: 1, strategy: { role: 'Artillery', deploy: 'Hidden Backfield', target: 'Infantry Swarms'} },
+        { id: 'veh_drone1', name: '🦟 DRONE 1', group: 'Vehicles', type: 'single', profile: 'drone', count: 1, strategy: { role: 'Harasser', deploy: 'Flanks', target: 'Shooting Units (Tag)'} },
+        { id: 'veh_drone2', name: '🦟 DRONE 2', group: 'Vehicles', type: 'single', profile: 'drone', count: 1, strategy: { role: 'Harasser', deploy: 'Flanks', target: 'Shooting Units (Tag)'} },
+        { id: 'veh_spawn', name: '👹 SPAWN (2)', group: 'Vehicles', type: 'single', profile: 'spawn', count: 2, strategy: { role: 'Screen', deploy: 'Back Corners', target: 'Deny Deep Strike'} }
     ];
 
     const PHASES = [
@@ -454,7 +477,7 @@
     };
 
     // --- 3. STATE MANAGEMENT (PERSISTENCE) ---
-    const STATE_KEY = 'dg_chosen_final_v10';
+    const STATE_KEY = 'dg_chosen_tactical_v1';
     
     let gameState = {
         turn: 0, cp: 0, vp: 0, phaseIdx: -1,
@@ -544,8 +567,21 @@
         }
 
         let html = '';
+        // Tactics Card (Yellow)
         if(data.tactics) {
-            html += `<div class="card tactics-card"><h3>⚡ TACTIC: ${data.tactics.title}</h3><div class="tactics-detail">${data.tactics.desc}</div></div>`;
+            html += `<div class="card tactics-card"><h3>⚡ SYNERGY: ${data.tactics.title}</h3><div class="tactics-detail">${data.tactics.desc}</div></div>`;
+        }
+        
+        // Strategy Card (Blue)
+        if(data.strategy) {
+            html += `<div class="card guide-card">
+                <h3>📋 TACTICAL ORDERS</h3>
+                <div class="guide-grid">
+                    <div><span class="guide-label">ROLE:</span> ${data.strategy.role}</div>
+                    <div><span class="guide-label">DEPLOY:</span> ${data.strategy.deploy}</div>
+                    <div><span class="guide-label">TARGETS:</span> ${data.strategy.target}</div>
+                </div>
+            </div>`;
         }
 
         const unitList = data.type === 'combo' ? data.units : [{ profile: data.profile, count: data.count, label: 'Unit' }];
